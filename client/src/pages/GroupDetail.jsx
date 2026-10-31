@@ -7,7 +7,7 @@ import {
   Users, MessageSquare, TrendingUp, ArrowLeft,
   Send, AlertCircle, MapPin, Calendar, DollarSign,
   Package, Shield, Clock, CheckCircle, UserPlus,
-  Trash2, UserMinus, Settings, LogOut, Check, X
+  UserMinus, LogOut, Check, X, Coins
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import GroupAssets from '../components/GroupAssets'
@@ -140,6 +140,13 @@ export default function GroupDetail() {
   const [selectedSuccessor, setSelectedSuccessor] = useState('')
   const [leaving, setLeaving] = useState(false)
 
+  // Contribution state
+  const [contributeModalOpen, setContributeModalOpen] = useState(false)
+  const [contributeAmount, setContributeAmount] = useState('')
+  const [contributeNote, setContributeNote] = useState('')
+  const [contributing, setContributing] = useState(false)
+  const [contributions, setContributions] = useState([])
+
   const fetchGroup = useCallback(async () => {
     try {
       const res = await api.get(`/groups/${groupId}`)
@@ -201,6 +208,48 @@ export default function GroupDetail() {
   const memberRole = myMembership?.role || group?.viewerRole
   const isLeader = ['owner', 'admin', 'moderator'].includes(memberRole)
   const isOwner = memberRole === 'owner' || user?.role === 'admin'
+
+  const fetchContributions = useCallback(async () => {
+    if (!accessToken || !isMember) return
+    try {
+      const res = await api.get(`/groups/${groupId}/contributions`)
+      setContributions(res.data.data || [])
+    } catch {
+      // not a member or unauthorized
+    }
+  }, [groupId, accessToken, isMember])
+
+  useEffect(() => {
+    if (isMember) {
+      fetchContributions()
+    }
+  }, [isMember, fetchContributions])
+
+  const handleContribute = async (e) => {
+    e.preventDefault()
+    const amountRupees = parseFloat(contributeAmount)
+    if (!amountRupees || amountRupees <= 0) {
+      return toast.error('Please enter a valid contribution amount in rupees.')
+    }
+    const amountPaise = Math.round(amountRupees * 100)
+    setContributing(true)
+    try {
+      await api.post(`/groups/${groupId}/contributions`, {
+        amountPaise,
+        note: contributeNote.trim(),
+      })
+      toast.success(`Successfully simulated contribution of ₹${amountRupees.toLocaleString('en-IN')}!`)
+      setContributeModalOpen(false)
+      setContributeAmount('')
+      setContributeNote('')
+      fetchGroup()
+      fetchContributions()
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || 'Contribution failed.')
+    } finally {
+      setContributing(false)
+    }
+  }
 
   const handleJoin = async () => {
     setJoining(true)
@@ -391,8 +440,16 @@ export default function GroupDetail() {
           <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
             {isMember ? (
               <div className="flex flex-col sm:items-end gap-2">
-                <div className="badge badge-success flex items-center gap-1">
-                  <CheckCircle size={12} /> {memberRole}
+                <div className="flex items-center gap-2">
+                  <div className="badge badge-success flex items-center gap-1">
+                    <CheckCircle size={12} /> {memberRole}
+                  </div>
+                  <button
+                    onClick={() => setContributeModalOpen(true)}
+                    className="btn-primary btn-sm flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+                  >
+                    <Coins size={13} /> Contribute
+                  </button>
                 </div>
                 <button
                   onClick={() => setLeaveModalOpen(true)}
@@ -482,6 +539,69 @@ export default function GroupDetail() {
               <div className="p-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                 <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Cancellation Policy</h3>
                 <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{group.cancellationRules}</p>
+              </div>
+            )}
+
+            {/* Precision & Basis Points info card */}
+            <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <Coins size={16} className="text-amber-400 shrink-0" />
+                <span className="text-slate-300">
+                  Precision: Stored in <strong className="text-amber-400">paise</strong> (₹1 = 100 paise) · Equity tracked in <strong className="text-purple-400">10,000 Basis Points</strong> (100.00%).
+                </span>
+              </div>
+              {isMember && (
+                <button
+                  onClick={() => setContributeModalOpen(true)}
+                  className="btn-primary btn-sm text-xs py-1 px-3 whitespace-nowrap"
+                >
+                  <Coins size={12} /> Simulate Contribution
+                </button>
+              )}
+            </div>
+
+            {/* Syndicate Contribution Ledger */}
+            {isMember && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <TrendingUp size={15} className="text-emerald-400" />
+                    <span>Recent Contributions ({contributions.length})</span>
+                  </h3>
+                  <span className="text-[11px] text-amber-400/90 font-medium">⚡ Simulated Ledger</span>
+                </div>
+
+                {contributions.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No contributions recorded yet. Be the first to contribute!</p>
+                ) : (
+                  <div className="space-y-2">
+                    {contributions.slice(0, 5).map(c => (
+                      <div key={c._id} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center text-xs">
+                            ₹
+                          </div>
+                          <div>
+                            <div className="font-semibold text-white">
+                              {c.user?.displayName || c.user?.username || 'Member'}
+                            </div>
+                            <div className="text-[10px] text-slate-400">
+                              {new Date(c.createdAt).toLocaleString()} {c.note && `· "${c.note}"`}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-emerald-400 font-mono">
+                            +{formatPaise(c.amountPaise)}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            {c.amountPaise.toLocaleString()} paise
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -765,6 +885,88 @@ export default function GroupDetail() {
                 {leaving ? 'Leaving...' : 'Confirm Departure'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Simulated Contribution Modal */}
+      {contributeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="glass-card max-w-md w-full p-6 space-y-4 border border-indigo-500/30 shadow-2xl">
+            <div className="flex items-start justify-between border-b pb-3" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                  <Coins size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Simulate Contribution</h3>
+                  <div className="text-[11px] text-slate-400">Zero-risk simulated payment sandbox</div>
+                </div>
+              </div>
+              <button onClick={() => setContributeModalOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleContribute} className="space-y-4">
+              <div className="sim-notice">
+                <AlertCircle size={14} className="shrink-0" />
+                <span>Simulated mode: No real money is collected. Funds will be added directly to the group's paise ledger.</span>
+              </div>
+
+              <div className="form-group">
+                <label className="label">Contribution Amount (INR ₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="e.g. 5000"
+                    value={contributeAmount}
+                    onChange={(e) => setContributeAmount(e.target.value)}
+                    className="input pl-8 font-mono text-base"
+                    required
+                  />
+                </div>
+                {contributeAmount && Number(contributeAmount) > 0 && (
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5 px-1">
+                    <span>Stored as integer paise:</span>
+                    <span className="font-mono text-emerald-400 font-semibold">
+                      {(Math.round(Number(contributeAmount) * 100)).toLocaleString()} paise
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="label">Note / Reference (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Initial member capital share"
+                  value={contributeNote}
+                  onChange={(e) => setContributeNote(e.target.value)}
+                  className="input text-xs"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                <button
+                  type="button"
+                  className="btn-secondary btn-sm"
+                  onClick={() => setContributeModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary btn-sm"
+                  disabled={contributing || !contributeAmount || Number(contributeAmount) <= 0}
+                >
+                  {contributing ? 'Processing...' : 'Confirm Simulated Contribution'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

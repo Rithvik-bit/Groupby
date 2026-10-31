@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
+import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -57,7 +58,8 @@ function GuestRoute({ children }) {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Public landing page (redirects to /dashboard if logged in) */}
+      <Route path="/" element={<GuestRoute><Landing /></GuestRoute>} />
 
       {/* Public auth routes */}
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
