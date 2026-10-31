@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import GhostFibers from '../components/GhostFibers'
 import {
   Users, Calendar, ArrowRight, Check,
   ChevronDown, ChevronUp, Clock, ShieldCheck
@@ -89,8 +90,33 @@ export default function Landing() {
       </header>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="pt-16 pb-14 border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <section className="relative pt-20 pb-16 border-b overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+        {/* GhostFibers WebGL Canvas Background */}
+        <div className="absolute inset-0 w-full h-full opacity-45 pointer-events-auto">
+          <GhostFibers
+            glowColor="#4f46e5"
+            secondaryColor="#00c2ff"
+            lineColor="#c7d2fe"
+            layers={3}
+            twist={0.85}
+            threads={72}
+            fiberStyle="dots"
+            depthOfField={0.85}
+            hoverEffect="focus"
+            intro={true}
+            mouseInteraction={true}
+            pulseOnClick={true}
+            waves={1.55}
+            volume={0.25}
+            rotation={21}
+            density={0.9}
+            foldGlow={1.8}
+            speed={0.45}
+            scale={1.1}
+          />
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center pointer-events-none">
           <p className="text-xs font-mono uppercase tracking-wider text-indigo-400 mb-3">
             Collaborative equipment co-ownership
           </p>
@@ -99,11 +125,11 @@ export default function Landing() {
             Split the cost of expensive equipment. Share the calendar.
           </h1>
 
-          <p className="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto mt-4 mb-8 leading-relaxed">
+          <p className="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto mt-4 mb-8 leading-relaxed">
             Buy a 3D printer, camera rig, or workshop tools with a team. Everyone pays their portion, gets an exact equity record, and books time slots without scheduling conflicts.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3 pointer-events-auto">
             <Link to="/register" className="btn-primary text-sm px-5 py-2.5">
               Create a group <ArrowRight size={15} />
             </Link>
@@ -112,7 +138,7 @@ export default function Landing() {
             </Link>
           </div>
 
-          <p className="text-xs text-zinc-500 mt-4">
+          <p className="text-xs text-zinc-400 mt-4">
             Runs with simulated funds. Zero real card details required.
           </p>
         </div>
