@@ -1,38 +1,83 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import GhostFibers from '../components/GhostFibers'
+import SpotlightCard from '../components/SpotlightCard'
+import AnimatedCounter from '../components/AnimatedCounter'
 import {
   Users, Calendar, ArrowRight, Check,
-  ChevronDown, ChevronUp, Clock, ShieldCheck
+  ChevronDown, ChevronUp, Clock, ShieldCheck,
+  CheckCircle2, Sparkles, Layers, RefreshCw
 } from 'lucide-react'
 
 export default function Landing() {
   const [activeFaq, setActiveFaq] = useState(null)
+  const [activeTab, setActiveTab] = useState('camera')
 
   const toggleFaq = (idx) => {
     setActiveFaq(activeFaq === idx ? null : idx)
   }
 
+  const equipmentTabs = {
+    camera: {
+      title: 'Sony FX3 Cinema Kit + 24-70mm GM II',
+      tag: 'Shared Equipment',
+      description: 'Four independent videographers pooling funds for shared commercial shoot calendar.',
+      funded: 270000,
+      target: 360000,
+      fundedPct: 75,
+      members: [
+        { name: 'Aarav K. (Lead)', amount: '₹90,000', bps: '2,500 bps (25.00%)' },
+        { name: 'Priya M.', amount: '₹90,000', bps: '2,500 bps (25.00%)' },
+        { name: 'Studio 42', amount: '₹90,000', bps: '2,500 bps (25.00%)' },
+        { name: 'Slot 4 (Open)', amount: '₹90,000 remaining', bps: '2,500 bps pending', open: true }
+      ],
+      upcoming: [
+        { time: 'Fri, Nov 6 · 09:00 – 18:00', who: 'Studio 42', desc: 'Commercial brand shoot' },
+        { time: 'Sat–Sun, Nov 7–8', who: 'Aarav K.', desc: 'Indie documentary weekend' }
+      ]
+    },
+    printer: {
+      title: 'Markforged Onyx Pro 3D Printer',
+      tag: 'Collective Purchase',
+      description: 'Hardware prototyping collective sharing continuous fiber fabrication queue.',
+      funded: 487500,
+      target: 650000,
+      fundedPct: 75,
+      members: [
+        { name: 'Rohan V.', amount: '₹1,62,500', bps: '2,500 bps (25.00%)' },
+        { name: 'DevCraft Labs', amount: '₹1,62,500', bps: '2,500 bps (25.00%)' },
+        { name: 'Ananya S.', amount: '₹1,62,500', bps: '2,500 bps (25.00%)' },
+        { name: 'Slot 4 (Open)', amount: '₹1,62,500 remaining', bps: '2,500 bps pending', open: true }
+      ],
+      upcoming: [
+        { time: 'Thu–Fri, Nov 5–6', who: 'DevCraft Labs', desc: 'Carbon nylon chassis batch' },
+        { time: 'Mon, Nov 9 · 10:00 – 17:00', who: 'Rohan V.', desc: 'Robotics bracket tooling' }
+      ]
+    }
+  }
+
+  const activeEquipment = equipmentTabs[activeTab] || equipmentTabs.camera
+
   const examples = [
     {
       item: 'Sony FX3 Cinema Rig',
-      retail: '₹3,80,000',
-      split4: '₹95,000',
-      split8: '₹47,500',
+      retail: 380000,
+      split4: 95000,
+      split8: 47500,
       timePerMonth: '7–8 days/month',
     },
     {
       item: 'Markforged Onyx Pro 3D Printer',
-      retail: '₹6,50,000',
-      split4: '₹1,62,500',
-      split8: '₹81,250',
+      retail: 650000,
+      split4: 162500,
+      split8: 81250,
       timePerMonth: 'Shared build queue',
     },
     {
       item: 'Epilog 60W CO2 Laser Cutter',
-      retail: '₹8,20,000',
-      split4: '₹2,05,000',
-      split8: '₹1,02,500',
+      retail: 820000,
+      split4: 205000,
+      split8: 102500,
       timePerMonth: 'Weekly slot rotation',
     },
   ]
@@ -62,18 +107,22 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
-      {/* ── Navigation ─────────────────────────────────────────────────── */}
-      <header className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
+      {/* ── Navigation (Sticky with backdrop-blur) ───────────────────────── */}
+      <header className="sticky top-0 z-40 border-b backdrop-blur-md bg-zinc-950/80 transition-all" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-semibold text-sm text-white">
-            <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+          <Link to="/" className="flex items-center gap-2.5 font-semibold text-sm text-white group">
+            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-indigo-500/20 group-hover:scale-105 transition-transform">
               GB
             </div>
-            <span>GroupBuy</span>
+            <span className="tracking-tight">GroupBuy</span>
+            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              Co-Ownership
+            </span>
           </Link>
 
           <nav className="hidden sm:flex items-center gap-6 text-xs text-zinc-400">
-            <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
+            <a href="#live-preview" className="hover:text-white transition-colors">Live Bento</a>
+            <a href="#how-it-works" className="hover:text-white transition-colors">Workflow</a>
             <a href="#pricing-breakdown" className="hover:text-white transition-colors">Cost comparison</a>
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </nav>
@@ -89,52 +138,55 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="relative pt-20 pb-16 border-b overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+      {/* ── Hero Section with React Bits Canvas Backdrop ────────────────── */}
+      <section className="relative pt-20 pb-20 border-b overflow-hidden" style={{ borderColor: 'var(--border)' }}>
         {/* GhostFibers WebGL Canvas Background */}
-        <div className="absolute inset-0 w-full h-full opacity-45 pointer-events-auto">
+        <div className="absolute inset-0 w-full h-full opacity-40 pointer-events-auto">
           <GhostFibers
             glowColor="#4f46e5"
-            secondaryColor="#00c2ff"
-            lineColor="#c7d2fe"
+            secondaryColor="#06b6d4"
+            lineColor="#e0e7ff"
             layers={3}
-            twist={0.85}
-            threads={72}
+            twist={0.8}
+            threads={64}
             fiberStyle="dots"
-            depthOfField={0.85}
+            depthOfField={0.8}
             hoverEffect="focus"
             intro={true}
             mouseInteraction={true}
             pulseOnClick={true}
-            waves={1.55}
-            volume={0.25}
-            rotation={21}
-            density={0.9}
-            foldGlow={1.8}
-            speed={0.45}
-            scale={1.1}
+            waves={1.4}
+            volume={0.22}
+            rotation={20}
+            density={0.85}
+            foldGlow={1.6}
+            speed={0.4}
+            scale={1.05}
           />
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center pointer-events-none">
-          <p className="text-xs font-mono uppercase tracking-wider text-indigo-400 mb-3">
-            Collaborative equipment co-ownership
-          </p>
+          {/* Status Badge chip */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium text-indigo-300 bg-indigo-950/70 border border-indigo-500/30 mb-5 shadow-lg shadow-indigo-950/50 backdrop-blur-sm pointer-events-auto">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Exact basis points equity · Integer paise precision</span>
+          </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white max-w-3xl mx-auto leading-tight">
-            Split the cost of expensive equipment. Share the calendar.
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight">
+            Split the cost of expensive equipment. <br className="hidden sm:inline" />
+            <span className="text-zinc-400 font-normal">Share the calendar without disputes.</span>
           </h1>
 
           <p className="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto mt-4 mb-8 leading-relaxed">
-            Buy a 3D printer, camera rig, or workshop tools with a team. Everyone pays their portion, gets an exact equity record, and books time slots without scheduling conflicts.
+            Pool funds for camera rigs, 3D printers, or workshop machines. Every member gets an audited equity record in basis points and books reservations on a conflict-free schedule.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pointer-events-auto">
-            <Link to="/register" className="btn-primary text-sm px-5 py-2.5">
+            <Link to="/register" className="btn-primary text-sm px-5 py-2.5 shadow-md shadow-indigo-500/20">
               Create a group <ArrowRight size={15} />
             </Link>
             <Link to="/login" className="btn-secondary text-sm px-5 py-2.5">
-              Explore demo account
+              Explore demo sandbox
             </Link>
           </div>
 
@@ -144,169 +196,261 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Live Interface Preview (Realistic, no slop) ──────────────────── */}
-      <section className="py-12 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="mb-4 flex items-center justify-between text-xs text-zinc-400">
-            <span className="font-medium text-zinc-300">Live platform sample</span>
-            <span>Example group: Studio Gear Pool</span>
+      {/* ── React Bits Inspired Bento Grid Live Preview ───────────────────── */}
+      <section id="live-preview" className="py-16 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <p className="text-xs font-mono text-indigo-400 uppercase tracking-wider mb-1">Interactive Interface Preview</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">How co-ownership runs in practice</h2>
+              <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-xl">
+                Explore a live demo asset. Notice the exact basis point equity distribution, integer paise funding ledger, and real-time reservation slots.
+              </p>
+            </div>
+
+            {/* Pill Switcher */}
+            <div className="flex items-center p-1 rounded-lg bg-zinc-900 border border-zinc-800 self-start sm:self-auto">
+              <button
+                onClick={() => setActiveTab('camera')}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'camera' ? 'bg-indigo-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'}`}
+              >
+                Cinema Gear
+              </button>
+              <button
+                onClick={() => setActiveTab('printer')}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'printer' ? 'bg-indigo-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'}`}
+              >
+                3D Fabrication
+              </button>
+            </div>
           </div>
 
-          <div className="border rounded-lg overflow-hidden bg-zinc-950" style={{ borderColor: 'var(--border)' }}>
-            {/* Header info */}
-            <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderColor: 'var(--border)' }}>
+          {/* Bento Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Bento Card 1: Asset Header & Progress (Span 2 cols on desktop) */}
+            <SpotlightCard className="md:col-span-2 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="badge badge-success">Active Funding</span>
-                  <span className="text-xs text-zinc-400">Category: Shared Equipment</span>
-                </div>
-                <h2 className="text-lg font-semibold text-white">Sony FX3 Cinema Kit + 24-70mm GM II</h2>
-                <p className="text-xs text-zinc-400 mt-0.5">Four independent videographers pooling funds for shared weekend commercial shoots.</p>
-              </div>
-
-              <div className="sm:text-right">
-                <div className="text-xl font-mono font-bold text-emerald-400">₹2,70,000</div>
-                <div className="text-xs text-zinc-400">of ₹3,60,000 target (75% funded)</div>
-              </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="px-5 pt-3">
-              <div className="progress-track">
-                <div className="progress-fill" style={{ width: '75%' }} />
-              </div>
-            </div>
-
-            {/* Members table & schedule */}
-            <div className="p-4 sm:p-5 grid md:grid-cols-2 gap-5">
-              {/* Ownership Breakdown */}
-              <div className="border rounded-md p-3.5 bg-zinc-900/60" style={{ borderColor: 'var(--border)' }}>
-                <div className="text-xs font-semibold text-zinc-300 mb-2.5 flex items-center justify-between">
-                  <span>Ownership Ledger</span>
-                  <span className="text-zinc-500 font-mono text-[11px]">Exact Basis Points</span>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="badge badge-success flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Active Funding
+                    </span>
+                    <span className="text-xs text-zinc-400">{activeEquipment.tag}</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700/60">
+                    Target: ₹{(activeEquipment.target / 100).toLocaleString('en-IN')}
+                  </span>
                 </div>
 
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-800">
-                    <span className="text-zinc-300">Aarav K. (Lead)</span>
-                    <span className="font-mono text-zinc-200">₹90,000 · 2,500 bps (25%)</span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-800">
-                    <span className="text-zinc-300">Priya M.</span>
-                    <span className="font-mono text-zinc-200">₹90,000 · 2,500 bps (25%)</span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-800">
-                    <span className="text-zinc-300">Studio 42</span>
-                    <span className="font-mono text-zinc-200">₹90,000 · 2,500 bps (25%)</span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 text-zinc-500">
-                    <span>Slot 4 (Open)</span>
-                    <span className="font-mono">₹90,000 remaining</span>
-                  </div>
-                </div>
+                <h3 className="text-lg font-semibold text-white tracking-tight">{activeEquipment.title}</h3>
+                <p className="text-xs text-zinc-400 mt-1 max-w-xl">{activeEquipment.description}</p>
               </div>
 
-              {/* Booking schedule */}
-              <div className="border rounded-md p-3.5 bg-zinc-900/60" style={{ borderColor: 'var(--border)' }}>
-                <div className="text-xs font-semibold text-zinc-300 mb-2.5 flex items-center justify-between">
-                  <span>Upcoming Equipment Bookings</span>
-                  <span className="text-zinc-500 text-[11px]">Shared Calendar</span>
+              <div className="mt-6 pt-5 border-t border-zinc-800/80">
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="text-xs text-zinc-400">Total Pooled Capital</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold font-mono text-emerald-400">
+                      ₹<AnimatedCounter value={activeEquipment.funded} />
+                    </span>
+                    <span className="text-xs text-zinc-400 ml-1.5 font-mono">
+                      ({activeEquipment.fundedPct}% funded)
+                    </span>
+                  </div>
                 </div>
 
-                <div className="space-y-2 text-xs">
-                  <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60">
-                    <div className="flex justify-between font-medium text-zinc-200">
-                      <span>Fri, Nov 6 · 09:00 – 18:00</span>
-                      <span className="text-zinc-400">Studio 42</span>
+                {/* Animated Progress Bar */}
+                <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-700 ease-out"
+                    style={{ width: `${activeEquipment.fundedPct}%` }}
+                  />
+                </div>
+              </div>
+            </SpotlightCard>
+
+            {/* Bento Card 2: Precision Metric Highlight (Span 1 col) */}
+            <SpotlightCard className="flex flex-col justify-between">
+              <div>
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3">
+                  <ShieldCheck size={18} />
+                </div>
+                <h4 className="text-sm font-semibold text-white">Mathematical Invariant</h4>
+                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                  Every split guarantees exactly 10,000 basis points sum. Contributed paise convert directly to immutable equity units.
+                </p>
+              </div>
+
+              <div className="mt-4 p-3 rounded-lg bg-zinc-950/70 border border-zinc-800/80 font-mono text-xs space-y-1.5">
+                <div className="flex justify-between text-zinc-400">
+                  <span>Unit Scale:</span>
+                  <span className="text-indigo-400">10,000 bps = 100%</span>
+                </div>
+                <div className="flex justify-between text-zinc-400">
+                  <span>Cur. Precision:</span>
+                  <span className="text-emerald-400">Integer Paise (₹ × 100)</span>
+                </div>
+                <div className="flex justify-between text-zinc-400">
+                  <span>Rounding Error:</span>
+                  <span className="text-zinc-200">0.00%</span>
+                </div>
+              </div>
+            </SpotlightCard>
+
+            {/* Bento Card 3: Ownership Ledger (Span 1.5 or 1 col) */}
+            <SpotlightCard className="md:col-span-2">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Layers size={15} className="text-indigo-400" />
+                  <span className="text-xs font-semibold text-zinc-200">Equity Breakdown Ledger</span>
+                </div>
+                <span className="text-[11px] font-mono text-zinc-500">Auto-allocated</span>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                {activeEquipment.members.map((member, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center justify-between py-2 px-2.5 rounded-lg border transition-colors ${
+                      member.open
+                        ? 'border-dashed border-zinc-700 bg-zinc-950/40 text-zinc-400'
+                        : 'border-zinc-800/80 bg-zinc-900/40 text-zinc-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-mono text-zinc-400">
+                        0{idx + 1}
+                      </span>
+                      <span className="font-medium">{member.name}</span>
                     </div>
-                    <div className="text-[11px] text-zinc-400 mt-0.5">Commercial brand shoot</div>
-                  </div>
-
-                  <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60">
-                    <div className="flex justify-between font-medium text-zinc-200">
-                      <span>Sat–Sun, Nov 7–8</span>
-                      <span className="text-zinc-400">Aarav K.</span>
+                    <div className="flex items-center gap-3 font-mono text-right">
+                      <span className={member.open ? 'text-zinc-500' : 'text-zinc-300'}>{member.amount}</span>
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded ${member.open ? 'bg-zinc-800 text-zinc-500' : 'bg-indigo-950/60 text-indigo-400 border border-indigo-800/40'}`}>
+                        {member.bps}
+                      </span>
                     </div>
-                    <div className="text-[11px] text-zinc-400 mt-0.5">Indie documentary weekend</div>
                   </div>
+                ))}
+              </div>
+            </SpotlightCard>
 
-                  <div className="p-2 rounded border border-dashed border-zinc-700 text-center text-zinc-400">
-                    <span>Mon, Nov 9 · Available for reservation</span>
+            {/* Bento Card 4: Shared Calendar Schedule */}
+            <SpotlightCard className="md:col-span-1">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Calendar size={15} className="text-emerald-400" />
+                  <span className="text-xs font-semibold text-zinc-200">Upcoming Reservations</span>
+                </div>
+                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                  No conflicts
+                </span>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                {activeEquipment.upcoming.map((slot, idx) => (
+                  <div key={idx} className="p-2.5 rounded-lg bg-zinc-950/70 border border-zinc-800">
+                    <div className="flex items-center justify-between text-zinc-200 font-medium">
+                      <span>{slot.time}</span>
+                      <span className="text-indigo-400 text-[11px]">{slot.who}</span>
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-1 flex items-center gap-1.5">
+                      <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
+                      <span>{slot.desc}</span>
+                    </div>
                   </div>
+                ))}
+
+                <div className="p-2 rounded-lg border border-dashed border-zinc-700/80 text-center text-zinc-400 text-[11px]">
+                  Next available slot opens Monday 09:00
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </section>
 
-      {/* ── How It Works ───────────────────────────────────────────────── */}
-      <section id="how-it-works" className="py-14 border-b" style={{ borderColor: 'var(--border)' }}>
+      {/* ── How It Works (Tactile Spotlight Cards) ───────────────────────── */}
+      <section id="how-it-works" className="py-16 border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="max-w-2xl mb-10">
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Three steps to co-own equipment</h2>
+          <div className="max-w-2xl mb-12">
+            <p className="text-xs font-mono text-indigo-400 uppercase tracking-wider mb-1">Simple Workflow</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Three steps to co-own equipment</h2>
             <p className="text-sm text-zinc-400 mt-1">
-              GroupBuy handles the accounting and the scheduling so you don't have to manage spreadsheets.
+              GroupBuy handles the accounting and the scheduling so you don't have to manage spreadsheets or dispute usage.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6">
-            <div className="border rounded-lg p-5 bg-zinc-900/40" style={{ borderColor: 'var(--border)' }}>
-              <div className="text-xs font-mono font-bold text-indigo-400 mb-2">01</div>
-              <h3 className="text-sm font-semibold text-white mb-1.5">Create your group</h3>
+            <SpotlightCard>
+              <div className="text-xs font-mono font-bold text-indigo-400 mb-3 px-2 py-1 bg-indigo-500/10 rounded w-fit border border-indigo-500/20">
+                STEP 01
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-2">Create your group</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
                 Set a target funding amount in rupees and invite members. Choose between public discovery or private invite-only links.
               </p>
-            </div>
+            </SpotlightCard>
 
-            <div className="border rounded-lg p-5 bg-zinc-900/40" style={{ borderColor: 'var(--border)' }}>
-              <div className="text-xs font-mono font-bold text-indigo-400 mb-2">02</div>
-              <h3 className="text-sm font-semibold text-white mb-1.5">Collect contributions</h3>
+            <SpotlightCard>
+              <div className="text-xs font-mono font-bold text-indigo-400 mb-3 px-2 py-1 bg-indigo-500/10 rounded w-fit border border-indigo-500/20">
+                STEP 02
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-2">Collect contributions</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
                 Members contribute their share. The ledger records every transaction in integer paise and issues exact basis point ownership tokens.
               </p>
-            </div>
+            </SpotlightCard>
 
-            <div className="border rounded-lg p-5 bg-zinc-900/40" style={{ borderColor: 'var(--border)' }}>
-              <div className="text-xs font-mono font-bold text-indigo-400 mb-2">03</div>
-              <h3 className="text-sm font-semibold text-white mb-1.5">Schedule usage</h3>
+            <SpotlightCard>
+              <div className="text-xs font-mono font-bold text-indigo-400 mb-3 px-2 py-1 bg-indigo-500/10 rounded w-fit border border-indigo-500/20">
+                STEP 03
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-2">Schedule usage</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
                 Register the physical tool or equipment. Members book date and time slots on the shared calendar with automated conflict detection.
               </p>
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </section>
 
-      {/* ── Cost Comparison Table ───────────────────────────────────────── */}
-      <section id="pricing-breakdown" className="py-14 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
+      {/* ── Cost Comparison Table with Animated Counters ──────────────────── */}
+      <section id="pricing-breakdown" className="py-16 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="max-w-2xl mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Real cost comparison</h2>
+            <p className="text-xs font-mono text-indigo-400 uppercase tracking-wider mb-1">Financial Efficiency</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Real equipment cost comparison</h2>
             <p className="text-sm text-zinc-400 mt-1">
               Most tools sit idle 70% of the month. Here is what splitting looks like on common production equipment.
             </p>
           </div>
 
-          <div className="border rounded-lg overflow-x-auto bg-zinc-950" style={{ borderColor: 'var(--border)' }}>
+          <div className="border rounded-xl overflow-x-auto bg-zinc-950 border-zinc-800 shadow-xl">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b text-zinc-400 bg-zinc-900/80" style={{ borderColor: 'var(--border)' }}>
-                  <th className="py-3 px-4 font-medium">Equipment</th>
-                  <th className="py-3 px-4 font-medium">Retail Price (Solo)</th>
-                  <th className="py-3 px-4 font-medium">4-Person Co-Op</th>
-                  <th className="py-3 px-4 font-medium">8-Person Co-Op</th>
-                  <th className="py-3 px-4 font-medium">Typical Access</th>
+                <tr className="border-b text-zinc-400 bg-zinc-900/90 border-zinc-800">
+                  <th className="py-3.5 px-4 font-medium">Equipment</th>
+                  <th className="py-3.5 px-4 font-medium">Retail Price (Solo)</th>
+                  <th className="py-3.5 px-4 font-medium">4-Person Co-Op</th>
+                  <th className="py-3.5 px-4 font-medium">8-Person Co-Op</th>
+                  <th className="py-3.5 px-4 font-medium">Typical Access</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-zinc-800/80">
                 {examples.map((ex, i) => (
-                  <tr key={i} className="hover:bg-zinc-900/50">
-                    <td className="py-3.5 px-4 font-medium text-white">{ex.item}</td>
-                    <td className="py-3.5 px-4 text-zinc-400 line-through">{ex.retail}</td>
-                    <td className="py-3.5 px-4 font-mono font-semibold text-emerald-400">{ex.split4} each</td>
-                    <td className="py-3.5 px-4 font-mono text-zinc-300">{ex.split8} each</td>
-                    <td className="py-3.5 px-4 text-zinc-400">{ex.timePerMonth}</td>
+                  <tr key={i} className="hover:bg-zinc-900/40 transition-colors">
+                    <td className="py-4 px-4 font-medium text-white">{ex.item}</td>
+                    <td className="py-4 px-4 text-zinc-500 line-through">
+                      ₹<AnimatedCounter value={ex.retail} />
+                    </td>
+                    <td className="py-4 px-4 font-mono font-semibold text-emerald-400">
+                      ₹<AnimatedCounter value={ex.split4} /> each
+                    </td>
+                    <td className="py-4 px-4 font-mono text-zinc-300">
+                      ₹<AnimatedCounter value={ex.split8} /> each
+                    </td>
+                    <td className="py-4 px-4 text-zinc-400">{ex.timePerMonth}</td>
                   </tr>
                 ))}
               </tbody>
@@ -316,21 +460,22 @@ export default function Landing() {
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────────────────── */}
-      <section id="faq" className="py-14 border-b" style={{ borderColor: 'var(--border)' }}>
+      <section id="faq" className="py-16 border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Frequently asked questions</h2>
+          <div className="mb-10">
+            <p className="text-xs font-mono text-indigo-400 uppercase tracking-wider mb-1">Architecture Details</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Frequently asked questions</h2>
             <p className="text-sm text-zinc-400 mt-1">
               Direct answers about the mechanics, arithmetic precision, and scheduling rules.
             </p>
           </div>
 
-          <div className="divide-y divide-zinc-800 border-y" style={{ borderColor: 'var(--border)' }}>
+          <div className="divide-y divide-zinc-800 border-y border-zinc-800">
             {faqs.map((faq, idx) => (
               <div key={idx} className="py-4">
                 <button
                   onClick={() => toggleFaq(idx)}
-                  className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-200 hover:text-white"
+                  className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-200 hover:text-white transition-colors"
                 >
                   <span>{faq.q}</span>
                   {activeFaq === idx ? (
@@ -340,7 +485,7 @@ export default function Landing() {
                   )}
                 </button>
                 {activeFaq === idx && (
-                  <p className="text-xs text-zinc-400 mt-2.5 leading-relaxed pr-8">
+                  <p className="text-xs text-zinc-400 mt-3 leading-relaxed pr-8 animate-fadeIn">
                     {faq.a}
                   </p>
                 )}
@@ -351,22 +496,24 @@ export default function Landing() {
       </section>
 
       {/* ── Bottom CTA ──────────────────────────────────────────────────── */}
-      <section className="py-14">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-2xl font-bold text-white mb-3">
-            Start a group in under two minutes
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mb-6">
-            Test the workflow, simulate contributions, and schedule reservations in our demo sandbox.
-          </p>
-          <div className="flex justify-center gap-3">
-            <Link to="/register" className="btn-primary text-sm px-5 py-2.5">
-              Create an account
-            </Link>
-            <Link to="/login" className="btn-secondary text-sm px-5 py-2.5">
-              Sign in with demo login
-            </Link>
-          </div>
+      <section className="py-20 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <SpotlightCard className="text-center py-12 px-6 sm:px-12 bg-gradient-to-b from-zinc-900/80 to-zinc-950/90 border-zinc-800">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">
+              Start a co-ownership group in under two minutes
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mb-8 leading-relaxed">
+              Test the workflow, simulate contributions, and schedule reservations in our demo sandbox.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link to="/register" className="btn-primary text-sm px-6 py-2.5">
+                Create an account
+              </Link>
+              <Link to="/login" className="btn-secondary text-sm px-6 py-2.5">
+                Sign in with demo login
+              </Link>
+            </div>
+          </SpotlightCard>
         </div>
       </section>
 

@@ -12,6 +12,28 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.addEventListener('error', function(e) {
+        var box = document.getElementById('debug-error-box');
+        if (!box) {
+          box = document.createElement('div');
+          box.id = 'debug-error-box';
+          box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:#991b1b;color:#ffffff;padding:20px;font-family:monospace;font-size:13px;white-space:pre-wrap;box-shadow:0 4px 20px rgba(0,0,0,0.8);max-height:80vh;overflow:auto;';
+          document.body.prepend(box);
+        }
+        box.textContent += '\n[GLOBAL ERROR] ' + (e.error ? (e.error.stack || e.error.message) : e.message);
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var box = document.getElementById('debug-error-box');
+        if (!box) {
+          box = document.createElement('div');
+          box.id = 'debug-error-box';
+          box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:#991b1b;color:#ffffff;padding:20px;font-family:monospace;font-size:13px;white-space:pre-wrap;box-shadow:0 4px 20px rgba(0,0,0,0.8);max-height:80vh;overflow:auto;';
+          document.body.prepend(box);
+        }
+        box.textContent += '\n[PROMISE REJECTION] ' + (e.reason ? (e.reason.stack || e.reason.message) : e.reason);
+      });
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

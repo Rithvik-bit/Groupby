@@ -461,32 +461,47 @@ const COMPOSITE_UNIFORMS = [
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 const compile = (gl, type, source) => {
-  const shader = gl.createShader(type);
-  if (!shader) return null;
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
-  gl.deleteShader(shader);
-  return null;
+  try {
+    const shader = gl.createShader(type);
+    if (!shader) return null;
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
+    const log = gl.getShaderInfoLog(shader);
+    console.warn('GhostFibers shader compile log:', log);
+    gl.deleteShader(shader);
+    return null;
+  } catch (err) {
+    console.warn('GhostFibers compile exception:', err);
+    return null;
+  }
 };
 
 const link = (gl, vertexSource, fragmentSource, names) => {
-  const vertex = compile(gl, gl.VERTEX_SHADER, vertexSource);
-  const fragment = compile(gl, gl.FRAGMENT_SHADER, fragmentSource);
-  const program = gl.createProgram();
-  if (!vertex || !fragment || !program) return null;
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  gl.deleteShader(vertex);
-  gl.deleteShader(fragment);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    gl.deleteProgram(program);
+  try {
+    const vertex = compile(gl, gl.VERTEX_SHADER, vertexSource);
+    const fragment = compile(gl, gl.FRAGMENT_SHADER, fragmentSource);
+    if (!vertex || !fragment) return null;
+    const program = gl.createProgram();
+    if (!program) return null;
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
+    gl.linkProgram(program);
+    gl.deleteShader(vertex);
+    gl.deleteShader(fragment);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      const log = gl.getProgramInfoLog(program);
+      console.warn('GhostFibers program link log:', log);
+      gl.deleteProgram(program);
+      return null;
+    }
+    const uniforms = {};
+    for (const name of names) uniforms[name] = gl.getUniformLocation(program, name);
+    return { program, uniforms };
+  } catch (err) {
+    console.warn('GhostFibers link exception:', err);
     return null;
   }
-  const uniforms = {};
-  for (const name of names) uniforms[name] = gl.getUniformLocation(program, name);
-  return { program, uniforms };
 };
 
 const frustum = (fov, aspect, near, far) => {
@@ -620,16 +635,24 @@ const GhostFibers = ({
   settingsRef.current = settings;
 
   useEffect(() => {
-    const container = containerRef.current;
-    const canvas = canvasRef.current;
-    const gl = canvas?.getContext('webgl2', {
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false,
-      depth: false,
-      stencil: false
-    });
-    if (!container || !canvas || !gl) return undefined;
+    try {
+      const container = containerRef.current;
+      const canvas = canvasRef.current;
+      if (!container || !canvas) return undefined;
+      let gl = null;
+      try {
+        gl = canvas.getContext('webgl2', {
+          alpha: true,
+          premultipliedAlpha: true,
+          antialias: false,
+          depth: false,
+          stencil: false
+        });
+      } catch (err) {
+        console.warn('GhostFibers WebGL2 context creation failed:', err);
+        return undefined;
+      }
+      if (!gl) return undefined;
 
     const floatTargets = !!gl.getExtension('EXT_color_buffer_float');
     const dots = link(gl, DOT_VERTEX, DOT_FRAGMENT, DOT_UNIFORMS);
@@ -760,22 +783,26 @@ const GhostFibers = ({
     };
 
     const resize = () => {
-      const s = settingsRef.current;
-      const width = Math.max(1, container.clientWidth);
-      const height = Math.max(1, container.clientHeight);
-      const baseDpr = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
-      const longest = Math.max(width, height) * baseDpr;
-      const ratio = longest > MAX_RENDER_DIM ? (baseDpr * MAX_RENDER_DIM) / longest : baseDpr;
-      const pixelWidth = Math.max(1, Math.round(width * ratio));
-      const pixelHeight = Math.max(1, Math.round(height * ratio));
-      if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-        canvas.width = pixelWidth;
-        canvas.height = pixelHeight;
+      try {
+        const s = settingsRef.current;
+        const width = Math.max(1, container.clientWidth || 300);
+        const height = Math.max(1, container.clientHeight || 200);
+        const baseDpr = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
+        const longest = Math.max(width, height) * baseDpr;
+        const ratio = longest > MAX_RENDER_DIM ? (baseDpr * MAX_RENDER_DIM) / longest : baseDpr;
+        const pixelWidth = Math.max(1, Math.round(width * ratio));
+        const pixelHeight = Math.max(1, Math.round(height * ratio));
+        if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+          canvas.width = pixelWidth;
+          canvas.height = pixelHeight;
+        }
+        state.width = width;
+        state.height = height;
+        state.fit = clamp(width / height / 1.5, 0.6, 1);
+        render();
+      } catch (err) {
+        console.warn('GhostFibers resize error:', err);
       }
-      state.width = width;
-      state.height = height;
-      state.fit = clamp(width / height / 1.5, 0.6, 1);
-      render();
     };
 
     const drawPass = (program, target, source, texel) => {
@@ -790,208 +817,216 @@ const GhostFibers = ({
     };
 
     const render = () => {
-      const s = settingsRef.current;
-      resolveColors(s);
-      const camera = cameraFor(s);
-      state.camera = camera;
-      const ratio = canvas.height / Math.max(state.height, 1);
-      const intro = s.paused || reduce ? 1 : clamp(state.intro / INTRO_SECONDS, 0, 1);
-      const introEase = 1 - (1 - intro) * (1 - intro) * (1 - intro);
+      try {
+        const s = settingsRef.current;
+        resolveColors(s);
+        const camera = cameraFor(s);
+        state.camera = camera;
+        const ratio = canvas.height / Math.max(state.height, 1);
+        const intro = s.paused || reduce ? 1 : clamp(state.intro / INTRO_SECONDS, 0, 1);
+        const introEase = 1 - (1 - intro) * (1 - intro) * (1 - intro);
 
-      allocate(scene, canvas.width, canvas.height);
-      gl.bindVertexArray(vao);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, scene.framebuffer);
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE);
-
-      const dotsPerFiber = Math.round(260 * s.density);
-      const blurCap = 22 * clamp(Math.sqrt(56000 / (s.threads * dotsPerFiber * s.layers)), 0.45, 1);
-      const area = Math.max(0.8 * s.thickness, 0.45) ** 2 / 0.64;
-      const load = Math.pow((s.threads / 72) * s.density * area, -0.75);
-      gl.useProgram(dots.program);
-      const u = dots.uniforms;
-      gl.uniform1f(u.uTime, state.time);
-      gl.uniform1f(u.uTwist, s.twist);
-      gl.uniform1f(u.uRoll, state.roll);
-      gl.uniform1f(u.uWaves, s.waves);
-      gl.uniform1f(u.uWidth, 0.62 * s.spread);
-      gl.uniformMatrix3fv(u.uOrient, false, camera.orient);
-      gl.uniform1f(u.uScale, s.scale * state.fit);
-      gl.uniformMatrix4fv(u.uViewProj, false, camera.viewProj);
-      gl.uniform3f(u.uEye, camera.eye[0], camera.eye[1], camera.eye[2]);
-      gl.uniform2f(u.uViewport, canvas.width, canvas.height);
-      gl.uniform1f(u.uDpr, ratio);
-      gl.uniform1f(u.uFibers, s.threads);
-      gl.uniform1f(u.uDots, dotsPerFiber);
-      gl.uniform1f(u.uFlow, state.flow);
-      gl.uniform1f(u.uSize, 1.6 * s.thickness);
-      gl.uniform1f(u.uFocus, state.focus);
-      gl.uniform1f(u.uDof, s.depthOfField);
-      gl.uniform1f(u.uMaxCoc, blurCap);
-      gl.uniform1f(u.uFocal, CAMERA);
-      gl.uniform1f(u.uIntro, introEase);
-      gl.uniform4f(u.uPulse, state.pulse.s, state.pulse.age, state.pulse.strength, state.pulse.ribbon);
-      gl.uniform4f(
-        u.uHover,
-        state.hover.x * ratio,
-        (state.height - state.hover.y) * ratio,
-        140 * ratio,
-        state.hover.presence * s.mouseStrength
-      );
-      gl.uniform1f(u.uPart, s.hover === 1 ? 1 : 0);
-      gl.uniform1f(u.uDotLength, s.dotLength);
-      gl.uniform1f(u.uSparkle, s.sparkle);
-      gl.uniform1f(u.uDepthSpread, 0.12);
-      gl.uniform1f(u.uVolume, s.volume);
-      gl.uniform3f(u.uGlowColor, state.glow[0], state.glow[1], state.glow[2]);
-      gl.uniform3f(u.uLineColor, state.line[0], state.line[1], state.line[2]);
-      gl.uniform3f(u.uSecondaryColor, state.secondary[0], state.secondary[1], state.secondary[2]);
-      gl.uniform1f(u.uTips, s.tips);
-      gl.uniform1f(u.uGradient, s.gradient);
-      gl.uniform1f(u.uFold, s.foldGlow);
-      for (let ribbon = 0; ribbon < s.layers; ribbon += 1) {
-        const place = PLACEMENTS[ribbon];
-        gl.uniform1f(u.uRibbon, ribbon);
-        gl.uniform4f(u.uPlace, place[0], place[1], place[2], place[3]);
-        gl.uniform1f(u.uGain, RIBBON_GAIN[ribbon] * load);
-        gl.uniform1f(u.uTint, RIBBON_TINT[ribbon]);
-        gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, s.threads * dotsPerFiber);
-      }
-
-      const dustCount = Math.round(420 * s.particles);
-      if (dustCount > 0) {
-        gl.useProgram(dust.program);
-        const d = dust.uniforms;
-        gl.uniformMatrix4fv(d.uViewProj, false, camera.viewProj);
-        gl.uniform2f(d.uViewport, canvas.width, canvas.height);
-        gl.uniform1f(d.uDpr, ratio);
-        gl.uniform1f(d.uTime, state.time);
-        gl.uniform1f(d.uSize, 2.2 * s.thickness);
-        gl.uniform1f(d.uFocus, state.focus);
-        gl.uniform1f(d.uDof, s.depthOfField);
-        gl.uniform1f(d.uMaxCoc, 22);
-        gl.uniform1f(d.uFocal, CAMERA);
-        gl.uniform1f(d.uIntro, introEase);
-        gl.uniform1f(d.uSparkle, s.sparkle);
-        gl.uniform1f(d.uScale, s.scale * state.fit);
-        gl.uniform1f(d.uGradient, s.gradient);
-        gl.uniform1f(d.uGain, 1 / s.thickness);
-        gl.uniform3f(d.uGlowColor, state.glow[0], state.glow[1], state.glow[2]);
-        gl.uniform3f(d.uLineColor, state.line[0], state.line[1], state.line[2]);
-        gl.uniform3f(d.uSecondaryColor, state.secondary[0], state.secondary[1], state.secondary[2]);
-        gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, dustCount);
-      }
-      gl.disable(gl.BLEND);
-
-      const blooming = s.glow > 0.001 && !s.lightMode;
-      gl.bindVertexArray(vao);
-      if (blooming) {
-        chain.forEach((target, index) => {
-          allocate(
-            target,
-            Math.max(1, Math.round(canvas.width / 2 ** (index + 1))),
-            Math.max(1, Math.round(canvas.height / 2 ** (index + 1)))
-          );
-        });
-        drawPass(bright, chain[0], scene, [0.5 / scene.width, 0.5 / scene.height]);
-        for (let index = 1; index < BLOOM_LEVELS; index += 1) {
-          drawPass(down, chain[index], chain[index - 1], [1 / chain[index - 1].width, 1 / chain[index - 1].height]);
-        }
+        allocate(scene, canvas.width, canvas.height);
+        gl.bindVertexArray(vao);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, scene.framebuffer);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE);
-        for (let index = BLOOM_LEVELS - 1; index > 0; index -= 1) {
-          drawPass(up, chain[index - 1], chain[index], [0.5 / chain[index].width, 0.5 / chain[index].height]);
+
+        const dotsPerFiber = Math.round(260 * s.density);
+        const blurCap = 22 * clamp(Math.sqrt(56000 / (s.threads * dotsPerFiber * s.layers)), 0.45, 1);
+        const area = Math.max(0.8 * s.thickness, 0.45) ** 2 / 0.64;
+        const load = Math.pow((s.threads / 72) * s.density * area, -0.75);
+        gl.useProgram(dots.program);
+        const u = dots.uniforms;
+        gl.uniform1f(u.uTime, state.time);
+        gl.uniform1f(u.uTwist, s.twist);
+        gl.uniform1f(u.uRoll, state.roll);
+        gl.uniform1f(u.uWaves, s.waves);
+        gl.uniform1f(u.uWidth, 0.62 * s.spread);
+        gl.uniformMatrix3fv(u.uOrient, false, camera.orient);
+        gl.uniform1f(u.uScale, s.scale * state.fit);
+        gl.uniformMatrix4fv(u.uViewProj, false, camera.viewProj);
+        gl.uniform3f(u.uEye, camera.eye[0], camera.eye[1], camera.eye[2]);
+        gl.uniform2f(u.uViewport, canvas.width, canvas.height);
+        gl.uniform1f(u.uDpr, ratio);
+        gl.uniform1f(u.uFibers, s.threads);
+        gl.uniform1f(u.uDots, dotsPerFiber);
+        gl.uniform1f(u.uFlow, state.flow);
+        gl.uniform1f(u.uSize, 1.6 * s.thickness);
+        gl.uniform1f(u.uFocus, state.focus);
+        gl.uniform1f(u.uDof, s.depthOfField);
+        gl.uniform1f(u.uMaxCoc, blurCap);
+        gl.uniform1f(u.uFocal, CAMERA);
+        gl.uniform1f(u.uIntro, introEase);
+        gl.uniform4f(u.uPulse, state.pulse.s, state.pulse.age, state.pulse.strength, state.pulse.ribbon);
+        gl.uniform4f(
+          u.uHover,
+          state.hover.x * ratio,
+          (state.height - state.hover.y) * ratio,
+          140 * ratio,
+          state.hover.presence * s.mouseStrength
+        );
+        gl.uniform1f(u.uPart, s.hover === 1 ? 1 : 0);
+        gl.uniform1f(u.uDotLength, s.dotLength);
+        gl.uniform1f(u.uSparkle, s.sparkle);
+        gl.uniform1f(u.uDepthSpread, 0.12);
+        gl.uniform1f(u.uVolume, s.volume);
+        gl.uniform3f(u.uGlowColor, state.glow[0], state.glow[1], state.glow[2]);
+        gl.uniform3f(u.uLineColor, state.line[0], state.line[1], state.line[2]);
+        gl.uniform3f(u.uSecondaryColor, state.secondary[0], state.secondary[1], state.secondary[2]);
+        gl.uniform1f(u.uTips, s.tips);
+        gl.uniform1f(u.uGradient, s.gradient);
+        gl.uniform1f(u.uFold, s.foldGlow);
+        for (let ribbon = 0; ribbon < s.layers; ribbon += 1) {
+          const place = PLACEMENTS[ribbon];
+          gl.uniform1f(u.uRibbon, ribbon);
+          gl.uniform4f(u.uPlace, place[0], place[1], place[2], place[3]);
+          gl.uniform1f(u.uGain, RIBBON_GAIN[ribbon] * load);
+          gl.uniform1f(u.uTint, RIBBON_TINT[ribbon]);
+          gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, s.threads * dotsPerFiber);
+        }
+
+        const dustCount = Math.round(420 * s.particles);
+        if (dustCount > 0) {
+          gl.useProgram(dust.program);
+          const d = dust.uniforms;
+          gl.uniformMatrix4fv(d.uViewProj, false, camera.viewProj);
+          gl.uniform2f(d.uViewport, canvas.width, canvas.height);
+          gl.uniform1f(d.uDpr, ratio);
+          gl.uniform1f(d.uTime, state.time);
+          gl.uniform1f(d.uSize, 2.2 * s.thickness);
+          gl.uniform1f(d.uFocus, state.focus);
+          gl.uniform1f(d.uDof, s.depthOfField);
+          gl.uniform1f(d.uMaxCoc, 22);
+          gl.uniform1f(d.uFocal, CAMERA);
+          gl.uniform1f(d.uIntro, introEase);
+          gl.uniform1f(d.uSparkle, s.sparkle);
+          gl.uniform1f(d.uScale, s.scale * state.fit);
+          gl.uniform1f(d.uGradient, s.gradient);
+          gl.uniform1f(d.uGain, 1 / s.thickness);
+          gl.uniform3f(d.uGlowColor, state.glow[0], state.glow[1], state.glow[2]);
+          gl.uniform3f(d.uLineColor, state.line[0], state.line[1], state.line[2]);
+          gl.uniform3f(d.uSecondaryColor, state.secondary[0], state.secondary[1], state.secondary[2]);
+          gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, dustCount);
         }
         gl.disable(gl.BLEND);
-      }
 
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.useProgram(composite.program);
-      const c = composite.uniforms;
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, scene.texture);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, blooming ? chain[0].texture : scene.texture);
-      gl.uniform1i(c.uScene, 0);
-      gl.uniform1i(c.uBloom, 1);
-      gl.uniform1f(c.uGlow, blooming ? s.glow : 0);
-      gl.uniform1f(c.uBrightness, s.brightness);
-      gl.uniform1f(c.uLightMode, s.lightMode ? 1 : 0);
-      gl.uniform1f(c.uGrain, s.grain);
-      gl.uniform1f(c.uVignette, s.vignette);
-      gl.uniform1f(c.uFrame, state.frame % 977);
-      gl.uniform2f(c.uView, canvas.width, canvas.height);
-      gl.uniform1f(c.uDpr, ratio);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, null);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, null);
-      gl.bindVertexArray(null);
+        const blooming = s.glow > 0.001 && !s.lightMode;
+        gl.bindVertexArray(vao);
+        if (blooming) {
+          chain.forEach((target, index) => {
+            allocate(
+              target,
+              Math.max(1, Math.round(canvas.width / 2 ** (index + 1))),
+              Math.max(1, Math.round(canvas.height / 2 ** (index + 1)))
+            );
+          });
+          drawPass(bright, chain[0], scene, [0.5 / scene.width, 0.5 / scene.height]);
+          for (let index = 1; index < BLOOM_LEVELS; index += 1) {
+            drawPass(down, chain[index], chain[index - 1], [1 / chain[index - 1].width, 1 / chain[index - 1].height]);
+          }
+          gl.enable(gl.BLEND);
+          gl.blendFunc(gl.ONE, gl.ONE);
+          for (let index = BLOOM_LEVELS - 1; index > 0; index -= 1) {
+            drawPass(up, chain[index - 1], chain[index], [0.5 / chain[index].width, 0.5 / chain[index].height]);
+          }
+          gl.disable(gl.BLEND);
+        }
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(composite.program);
+        const c = composite.uniforms;
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, scene.texture);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, blooming ? chain[0].texture : scene.texture);
+        gl.uniform1i(c.uScene, 0);
+        gl.uniform1i(c.uBloom, 1);
+        gl.uniform1f(c.uGlow, blooming ? s.glow : 0);
+        gl.uniform1f(c.uBrightness, s.brightness);
+        gl.uniform1f(c.uLightMode, s.lightMode ? 1 : 0);
+        gl.uniform1f(c.uGrain, s.grain);
+        gl.uniform1f(c.uVignette, s.vignette);
+        gl.uniform1f(c.uFrame, state.frame % 977);
+        gl.uniform2f(c.uView, canvas.width, canvas.height);
+        gl.uniform1f(c.uDpr, ratio);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindVertexArray(null);
+      } catch (err) {
+        console.warn('GhostFibers render error:', err);
+      }
     };
 
     const frame = now => {
-      raf = 0;
-      if (!alive || !visible || document.hidden) return;
-      const s = settingsRef.current;
-      const elapsed = last ? (now - last) / 1000 : 1 / 60;
-      const dt = Math.min(0.05, elapsed);
-      last = now;
-      const moving = !s.paused && !reduce;
-      if (moving) {
-        state.frame += 1;
-        state.time += dt * s.speed;
-        state.roll += dt * s.speed * s.rollSpeed;
-        state.flow += dt * s.flow * 12;
-        state.intro += Math.min(elapsed, 1);
-      } else if (state.intro < INTRO_SECONDS) {
-        state.intro = INTRO_SECONDS;
-      }
-      state.pulse.age += dt;
-      state.pulse.strength = Math.max(0, 1 - state.pulse.age / 1.8) ** 2;
+      try {
+        raf = 0;
+        if (!alive || !visible || document.hidden) return;
+        const s = settingsRef.current;
+        const elapsed = last ? (now - last) / 1000 : 1 / 60;
+        const dt = Math.min(0.05, elapsed);
+        last = now;
+        const moving = !s.paused && !reduce;
+        if (moving) {
+          state.frame += 1;
+          state.time += dt * s.speed;
+          state.roll += dt * s.speed * s.rollSpeed;
+          state.flow += dt * s.flow * 12;
+          state.intro += Math.min(elapsed, 1);
+        } else if (state.intro < INTRO_SECONDS) {
+          state.intro = INTRO_SECONDS;
+        }
+        state.pulse.age += dt;
+        state.pulse.strength = Math.max(0, 1 - state.pulse.age / 1.8) ** 2;
 
-      const { pointer, hover, look } = state;
-      const active = s.mouseInteraction && pointer.inside && !reduce;
-      if (active && !hover.placed) {
-        hover.x = pointer.x;
-        hover.y = pointer.y;
-        hover.placed = true;
-      }
-      hover.x += (pointer.x - hover.x) * (1 - Math.exp(-dt / 0.08));
-      hover.y += (pointer.y - hover.y) * (1 - Math.exp(-dt / 0.08));
-      const goal = active ? 1 : 0;
-      hover.presence += (goal - hover.presence) * (1 - Math.exp(-dt / (goal > hover.presence ? 0.3 : 0.6)));
-      if (!active && hover.presence < 0.001) hover.placed = false;
-      const lookX = active ? (pointer.x / state.width - 0.5) * 0.5 : 0;
-      const lookY = active ? (0.5 - pointer.y / state.height) * 0.5 : 0;
-      look.vx += (30 * (lookX - look.x) - 11 * look.vx) * dt;
-      look.vy += (30 * (lookY - look.y) - 11 * look.vy) * dt;
-      look.x += look.vx * dt;
-      look.y += look.vy * dt;
+        const { pointer, hover, look } = state;
+        const active = s.mouseInteraction && pointer.inside && !reduce;
+        if (active && !hover.placed) {
+          hover.x = pointer.x;
+          hover.y = pointer.y;
+          hover.placed = true;
+        }
+        hover.x += (pointer.x - hover.x) * (1 - Math.exp(-dt / 0.08));
+        hover.y += (pointer.y - hover.y) * (1 - Math.exp(-dt / 0.08));
+        const goal = active ? 1 : 0;
+        hover.presence += (goal - hover.presence) * (1 - Math.exp(-dt / (goal > hover.presence ? 0.3 : 0.6)));
+        if (!active && hover.presence < 0.001) hover.placed = false;
+        const lookX = active ? (pointer.x / state.width - 0.5) * 0.5 : 0;
+        const lookY = active ? (0.5 - pointer.y / state.height) * 0.5 : 0;
+        look.vx += (30 * (lookX - look.x) - 11 * look.vx) * dt;
+        look.vy += (30 * (lookY - look.y) - 11 * look.vy) * dt;
+        look.x += look.vx * dt;
+        look.y += look.vy * dt;
 
-      const resting = CAMERA + s.focusDepth * 3;
-      let focusGoal = resting;
-      if (active && s.hover === 0) {
-        const near = nearestOnRibbon(s, hover.x, hover.y);
-        if (near) focusGoal = resting + (near.depth - resting) * hover.presence * Math.min(1, s.mouseStrength);
-      }
-      state.focus += (focusGoal - state.focus) * (1 - Math.exp(-dt / 0.35));
+        const resting = CAMERA + s.focusDepth * 3;
+        let focusGoal = resting;
+        if (active && s.hover === 0) {
+          const near = nearestOnRibbon(s, hover.x, hover.y);
+          if (near) focusGoal = resting + (near.depth - resting) * hover.presence * Math.min(1, s.mouseStrength);
+        }
+        state.focus += (focusGoal - state.focus) * (1 - Math.exp(-dt / 0.35));
 
-      render();
-      const settling =
-        Math.abs(goal - hover.presence) > 0.002 ||
-        Math.abs(lookX - look.x) > 0.0002 ||
-        Math.abs(lookY - look.y) > 0.0002 ||
-        Math.abs(focusGoal - state.focus) > 0.001 ||
-        state.pulse.strength > 0.001;
-      if (moving || settling) raf = requestAnimationFrame(frame);
-      else last = 0;
+        render();
+        const settling =
+          Math.abs(goal - hover.presence) > 0.002 ||
+          Math.abs(lookX - look.x) > 0.0002 ||
+          Math.abs(lookY - look.y) > 0.0002 ||
+          Math.abs(focusGoal - state.focus) > 0.001 ||
+          state.pulse.strength > 0.001;
+        if (moving || settling) raf = requestAnimationFrame(frame);
+        else last = 0;
+      } catch (err) {
+        console.warn('GhostFibers animation frame error:', err);
+      }
     };
 
     const wake = () => {
@@ -1053,31 +1088,49 @@ const GhostFibers = ({
     wake();
 
     wakeRef.current = () => {
-      if (!raf) render();
-      wake();
+      try {
+        if (!raf) render();
+        wake();
+      } catch (err) {
+        console.warn('GhostFibers wake error:', err);
+      }
     };
 
     return () => {
-      alive = false;
-      cancelAnimationFrame(raf);
-      wakeRef.current = null;
-      resizeObserver.disconnect();
-      intersection.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
-      document.documentElement.removeEventListener('pointerleave', onPointerLeave);
-      document.removeEventListener('visibilitychange', onVisibility);
-      gl.deleteVertexArray(vao);
-      [scene, ...chain].forEach(target => {
-        if (target.texture) gl.deleteTexture(target.texture);
-        gl.deleteFramebuffer(target.framebuffer);
-      });
-      [dots, dust, bright, down, up, composite].forEach(entry => gl.deleteProgram(entry.program));
+      try {
+        alive = false;
+        cancelAnimationFrame(raf);
+        wakeRef.current = null;
+        resizeObserver?.disconnect?.();
+        intersection?.disconnect?.();
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerdown', onPointerDown);
+        document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+        document.removeEventListener('visibilitychange', onVisibility);
+        if (vao) gl.deleteVertexArray(vao);
+        [scene, ...chain].forEach(target => {
+          if (target?.texture) gl.deleteTexture(target.texture);
+          if (target?.framebuffer) gl.deleteFramebuffer(target.framebuffer);
+        });
+        [dots, dust, bright, down, up, composite].forEach(entry => {
+          if (entry?.program) gl.deleteProgram(entry.program);
+        });
+      } catch (err) {
+        console.warn('GhostFibers cleanup error:', err);
+      }
     };
-  }, []);
+  } catch (outerErr) {
+    console.warn('GhostFibers outer initialization error:', outerErr);
+    return undefined;
+  }
+}, []);
 
   useEffect(() => {
-    wakeRef.current?.();
+    try {
+      wakeRef.current?.();
+    } catch (err) {
+      console.warn('GhostFibers wake effect error:', err);
+    }
   });
 
   const { className = '', ...attributes } = rest;
@@ -1090,3 +1143,4 @@ const GhostFibers = ({
 };
 
 export default GhostFibers;
+
