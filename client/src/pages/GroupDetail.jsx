@@ -22,9 +22,9 @@ const TYPE_COLORS = {
   business_venture: '#f59e0b',
 }
 const TYPE_LABELS = {
-  collective_purchase: '🛒 Collective Purchase',
-  shared_equipment: '⚙️ Shared Equipment',
-  business_venture: '🏢 Business Venture',
+  collective_purchase: 'Collective Purchase',
+  shared_equipment: 'Shared Equipment',
+  business_venture: 'Business Venture',
 }
 
 // ── Chat component ────────────────────────────────────────────────────────────

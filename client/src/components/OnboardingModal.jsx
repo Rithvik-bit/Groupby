@@ -1,9 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  Sparkles, X, CheckCircle2, Circle, ArrowRight,
-  ShieldCheck, Coins, PieChart, Calendar, HelpCircle
-} from 'lucide-react'
+import { X, ArrowRight, ShieldCheck } from 'lucide-react'
 
 export default function OnboardingModal({ isOpen, onClose }) {
   const [currentStep, setCurrentStep] = useState(0)
@@ -20,32 +17,25 @@ export default function OnboardingModal({ isOpen, onClose }) {
 
   const steps = [
     {
-      title: "Welcome to GroupBuy Syndicates",
-      badge: "Platform Overview",
+      title: "How GroupBuy works",
       content: (
-        <div className="space-y-4">
-          <p className="text-sm text-slate-300 leading-relaxed">
-            GroupBuy is engineered to let individuals and organizations co-own high-value assets with absolute mathematical precision and conflict-free resource sharing.
+        <div className="space-y-3 text-xs text-zinc-300">
+          <p className="leading-relaxed">
+            GroupBuy helps groups buy shared equipment and split time on a shared calendar without arguments over ownership or booking conflicts.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-3 pt-1">
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-              <div className="flex items-center gap-2 text-indigo-400 font-semibold text-xs mb-1">
-                <Coins size={15} />
-                <span>Zero Rounding Errors</span>
-              </div>
-              <p className="text-xs text-slate-400">
-                All values are stored strictly in <strong>integer paise</strong> (₹1 = 100 paise) to prevent floating-point discrepancies.
+            <div className="p-3 rounded border border-zinc-800 bg-zinc-900/60">
+              <div className="font-semibold text-zinc-200 mb-1">Paise ledger</div>
+              <p className="text-zinc-400">
+                All money records are stored in integer paise (₹1 = 100 paise) so totals never drift due to rounding.
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-              <div className="flex items-center gap-2 text-purple-400 font-semibold text-xs mb-1">
-                <PieChart size={15} />
-                <span>Basis Points Equity</span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Ownership shares sum to exactly <strong>10,000 basis points</strong> (100.00%), ensuring verifiable ownership rights.
+            <div className="p-3 rounded border border-zinc-800 bg-zinc-900/60">
+              <div className="font-semibold text-zinc-200 mb-1">Basis points equity</div>
+              <p className="text-zinc-400">
+                Ownership sums to exactly 10,000 basis points (100.00%), clearly defining each member's share.
               </p>
             </div>
           </div>
@@ -53,135 +43,89 @@ export default function OnboardingModal({ isOpen, onClose }) {
       )
     },
     {
-      title: "Actionable 3-Step Quickstart",
-      badge: "Interactive Guide",
+      title: "Quick start checklist",
       content: (
-        <div className="space-y-3">
-          <p className="text-xs text-slate-300">
-            Follow these three milestones to master the collaborative workflow:
+        <div className="space-y-2.5 text-xs">
+          <div className="p-3 rounded border border-zinc-800 bg-zinc-900/60 flex items-center justify-between gap-3">
+            <div>
+              <div className="font-medium text-white">1. Browse open groups</div>
+              <div className="text-zinc-400 text-[11px]">Check out current equipment pools or create your own.</div>
+            </div>
+            <Link to="/groups" onClick={handleDismiss} className="btn-secondary btn-sm text-[11px] py-1 px-2.5 shrink-0">
+              Groups <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          <div className="p-3 rounded border border-zinc-800 bg-zinc-900/60 flex items-center justify-between gap-3">
+            <div>
+              <div className="font-medium text-white">2. Try a simulated contribution</div>
+              <div className="text-zinc-400 text-[11px]">Simulate funding a group in rupees to see the live ledger update.</div>
+            </div>
+            <Link to="/groups" onClick={handleDismiss} className="btn-secondary btn-sm text-[11px] py-1 px-2.5 shrink-0">
+              Contribute <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          <div className="p-3 rounded border border-zinc-800 bg-zinc-900/60 flex items-center justify-between gap-3">
+            <div>
+              <div className="font-medium text-white">3. Reserve equipment time</div>
+              <div className="text-zinc-400 text-[11px]">Book time slots on shared assets with automated conflict checks.</div>
+            </div>
+            <Link to="/bookings" onClick={handleDismiss} className="btn-secondary btn-sm text-[11px] py-1 px-2.5 shrink-0">
+              Bookings <ArrowRight size={12} />
+            </Link>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Simulated sandbox",
+      content: (
+        <div className="space-y-3 text-xs text-zinc-300">
+          <div className="p-3 rounded border border-zinc-800 bg-zinc-900/80 leading-relaxed text-zinc-400">
+            All financial operations on this instance are simulated for demonstration. No real bank accounts or payment processors are charged.
+          </div>
+          <p className="text-zinc-400">
+            You can re-open this guide at any time by clicking <strong>Guide</strong> in the navigation header.
           </p>
-
-          <div className="space-y-2.5">
-            <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">
-                  1
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-white">Discover & Join a Syndicate</div>
-                  <div className="text-[11px] text-slate-400">
-                    Browse public groups or create your own with custom funding targets.
-                  </div>
-                </div>
-              </div>
-              <Link to="/groups" onClick={handleDismiss} className="btn-secondary btn-sm text-[11px] py-1 px-2.5 shrink-0">
-                Browse <ArrowRight size={12} />
-              </Link>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-400 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">
-                  2
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-white">Simulate a Contribution</div>
-                  <div className="text-[11px] text-slate-400">
-                    Test the simulated wallet with zero financial risk and watch your equity mint in real-time.
-                  </div>
-                </div>
-              </div>
-              <Link to="/groups" onClick={handleDismiss} className="btn-secondary btn-sm text-[11px] py-1 px-2.5 shrink-0">
-                Try Out <ArrowRight size={12} />
-              </Link>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">
-                  3
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-white">Book Shared Equipment Slots</div>
-                  <div className="text-[11px] text-slate-400">
-                    Reserve shared assets conflict-free on the unified reservation calendar.
-                  </div>
-                </div>
-              </div>
-              <Link to="/bookings" onClick={handleDismiss} className="btn-secondary btn-sm text-[11px] py-1 px-2.5 shrink-0">
-                Calendar <ArrowRight size={12} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      title: "Real-Time Collaboration",
-      badge: "Features",
-      content: (
-        <div className="space-y-3.5 text-xs text-slate-300">
-          <div className="p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-900/40 space-y-2">
-            <div className="flex items-center gap-2 text-indigo-300 font-semibold text-sm">
-              <ShieldCheck size={16} />
-              <span>Safety & Governance Safeguards</span>
-            </div>
-            <p className="text-slate-400 leading-relaxed">
-              Every group contains an authenticated Socket.IO chat room, an immutable audit log of all contributions and administrative actions, and automatic email notifications.
-            </p>
-          </div>
-
-          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 flex items-center justify-between">
-            <span>Need this guide again? Click the <strong>Help (?)</strong> icon in the header anytime.</span>
-          </div>
         </div>
       )
     }
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div
-        className="w-full max-w-lg rounded-2xl p-6 relative border border-indigo-500/30 shadow-2xl space-y-5"
+        className="w-full max-w-md rounded-lg p-5 relative border border-zinc-800 shadow-xl space-y-4"
         style={{ background: 'var(--bg-secondary)' }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b pb-3.5" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
-              <Sparkles size={16} />
-            </div>
-            <div>
-              <span className="badge badge-primary text-[10px] uppercase font-bold tracking-wider py-0.5">
-                {steps[currentStep].badge}
-              </span>
-              <h3 className="text-base font-bold text-white mt-0.5">
-                {steps[currentStep].title}
-              </h3>
-            </div>
-          </div>
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+          <h3 className="text-sm font-semibold text-white">
+            {steps[currentStep].title}
+          </h3>
           <button
             onClick={handleDismiss}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded text-zinc-400 hover:text-white transition-colors"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Step Body */}
-        <div className="min-h-[190px]">
+        <div className="min-h-[140px]">
           {steps[currentStep].content}
         </div>
 
-        {/* Step indicator dots & Navigation */}
-        <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-zinc-800">
           <div className="flex items-center gap-1.5">
             {steps.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentStep(i)}
-                className={`w-2.5 h-2.5 rounded-full transition-all ${
-                  currentStep === i ? 'w-6 bg-indigo-500' : 'bg-slate-700 hover:bg-slate-600'
+                className={`w-2 h-2 rounded-full transition-all ${
+                  currentStep === i ? 'w-4 bg-indigo-500' : 'bg-zinc-700'
                 }`}
               />
             ))}
@@ -191,7 +135,7 @@ export default function OnboardingModal({ isOpen, onClose }) {
             {currentStep > 0 && (
               <button
                 onClick={() => setCurrentStep(currentStep - 1)}
-                className="btn-secondary btn-sm text-xs py-1.5 px-3"
+                className="btn-secondary btn-sm text-xs py-1 px-3"
               >
                 Back
               </button>
@@ -200,35 +144,34 @@ export default function OnboardingModal({ isOpen, onClose }) {
             {currentStep < steps.length - 1 ? (
               <button
                 onClick={() => setCurrentStep(currentStep + 1)}
-                className="btn-primary btn-sm text-xs py-1.5 px-3"
+                className="btn-primary btn-sm text-xs py-1 px-3"
               >
-                Next <ArrowRight size={13} />
+                Next
               </button>
             ) : (
               <button
                 onClick={handleDismiss}
-                className="btn-primary btn-sm text-xs py-1.5 px-3"
+                className="btn-primary btn-sm text-xs py-1 px-3"
               >
-                Got it, Let's Go!
+                Done
               </button>
             )}
           </div>
         </div>
 
         {/* Don't show again toggle */}
-        <div className="flex items-center justify-between pt-1">
-          <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400 hover:text-slate-300">
+        <div className="pt-1">
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-400 hover:text-zinc-300">
             <input
               type="checkbox"
               checked={dontShowAgain}
               onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0"
+              className="rounded bg-zinc-800 border-zinc-700 text-indigo-600 focus:ring-0"
             />
-            <span>Don't show this walkthrough automatically on login</span>
+            <span>Don't show this walkthrough on login</span>
           </label>
         </div>
       </div>
     </div>
   )
 }
-

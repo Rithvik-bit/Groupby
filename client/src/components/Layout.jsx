@@ -4,19 +4,18 @@ import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 import OnboardingModal from './OnboardingModal'
 import {
-  LayoutDashboard, Users, Plus, User, LogOut,
+  LayoutDashboard, Users, Plus, LogOut,
   Bell, Menu, X, Wifi, WifiOff, HelpCircle,
-  Coins, PieChart, Sparkles, ChevronRight, Mail, Calendar
+  Mail, Calendar
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/groups', icon: Users, label: 'Discover Groups' },
+  { to: '/groups', icon: Users, label: 'Groups' },
   { to: '/bookings', icon: Calendar, label: 'My Bookings' },
   { to: '/invitations', icon: Mail, label: 'Invitations' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/profile', icon: User, label: 'Profile' },
 ]
 
 export default function Layout() {
@@ -36,7 +35,7 @@ export default function Layout() {
 
   const handleLogout = async () => {
     await logout()
-    toast.success('Logged out successfully')
+    toast.success('Logged out')
     navigate('/login')
   }
 
@@ -51,202 +50,164 @@ export default function Layout() {
         {/* Mobile overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-20 lg:hidden"
-            style={{ background: 'rgba(0,0,0,0.6)' }}
+            className="fixed inset-0 z-20 lg:hidden bg-black/60"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         <aside
-          className={`fixed top-0 left-0 h-full z-30 transition-transform duration-300 flex flex-col
+          className={`fixed top-0 left-0 h-full z-30 transition-transform duration-200 flex flex-col
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:z-auto`}
           style={{
-            width: '260px',
+            width: '240px',
             background: 'var(--bg-secondary)',
             borderRight: '1px solid var(--border)',
           }}
         >
           {/* Logo */}
-          <div className="p-5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
-            <NavLink to="/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-500/20"
-                style={{ background: 'var(--gradient-primary)' }}
-              >
+          <div className="p-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--border)' }}>
+            <NavLink to="/dashboard" className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
                 GB
               </div>
-              <div>
-                <div className="font-bold text-sm text-white flex items-center gap-1.5">
-                  GroupBuy
-                  <span className="badge badge-primary text-[9px] py-0 px-1 font-mono">v1.0</span>
-                </div>
-                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Share. Build. Own.</div>
-              </div>
+              <div className="font-semibold text-sm text-white">GroupBuy</div>
             </NavLink>
             <button
-              className="lg:hidden p-1 rounded-lg"
-              style={{ color: 'var(--text-secondary)' }}
+              className="lg:hidden p-1 rounded text-zinc-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
             {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
               <NavLink
                 key={to}
                 to={to}
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
-                  ${isActive ? 'text-white' : 'hover:bg-white/5'}`
+                  `flex items-center gap-2.5 px-3 py-2 rounded text-xs font-medium transition-colors
+                  ${isActive
+                    ? 'bg-zinc-800/80 text-white font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'}`
                 }
-                style={({ isActive }) => ({
-                  background: isActive ? 'rgba(99,102,241,0.15)' : undefined,
-                  color: isActive ? '#818cf8' : 'var(--text-secondary)',
-                  border: isActive ? '1px solid rgba(99,102,241,0.25)' : '1px solid transparent',
-                })}
               >
-                <Icon size={17} />
+                <Icon size={15} />
                 <span>{label}</span>
               </NavLink>
             ))}
 
-            {/* Create group CTA */}
             <div className="pt-3">
               <NavLink
                 to="/groups/new"
                 onClick={() => setSidebarOpen(false)}
-                className="btn-primary w-full justify-center shadow-lg shadow-indigo-600/20"
-                style={{ justifyContent: 'center' }}
+                className="btn-primary w-full justify-center text-xs py-2"
               >
-                <Plus size={16} />
-                New Syndicate
+                <Plus size={14} />
+                Create Group
               </NavLink>
             </div>
           </nav>
 
-          {/* Tour launcher & status */}
-          <div className="p-4 space-y-3" style={{ borderTop: '1px solid var(--border)' }}>
+          {/* Bottom user & guide panel */}
+          <div className="p-3 border-t space-y-2 text-xs" style={{ borderColor: 'var(--border)' }}>
             <button
               onClick={() => setOnboardingOpen(true)}
-              className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors text-left"
             >
-              <span className="flex items-center gap-2">
-                <Sparkles size={14} className="text-indigo-400" />
-                <span>Platform Quickstart</span>
-              </span>
-              <span className="badge badge-primary text-[10px] py-0">Tour</span>
+              <HelpCircle size={14} className="text-zinc-400" />
+              <span>Platform Guide</span>
             </button>
 
-            {/* Connection status */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-2.5 py-1 text-[11px] text-zinc-500">
               {connected
-                ? <Wifi size={13} color="#10b981" />
-                : <WifiOff size={13} color="#6b6b80" />
+                ? <Wifi size={12} className="text-emerald-500" />
+                : <WifiOff size={12} className="text-zinc-500" />
               }
-              <span className="text-xs" style={{ color: connected ? '#10b981' : 'var(--text-secondary)' }}>
-                {connected ? 'Real-time sync active' : 'Connecting...'}
-              </span>
+              <span>{connected ? 'Live sync connected' : 'Connecting...'}</span>
             </div>
 
-            {/* User profile card */}
-            <div className="flex items-center gap-3 p-2 rounded-xl" style={{ background: 'var(--bg-card)' }}>
-              <div className="avatar avatar-sm" style={{ flexShrink: 0 }}>
-                {user?.avatarUrl
-                  ? <img src={user.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-                  : initials
-                }
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                  {user?.displayName || user?.username}
+            {/* User row */}
+            <div className="flex items-center justify-between p-2 rounded bg-zinc-900 border border-zinc-800/80">
+              <NavLink to="/profile" className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-90">
+                <div className="avatar avatar-sm text-[11px]">
+                  {initials}
                 </div>
-                <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
-                  {user?.email}
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-white truncate">
+                    {user?.displayName || user?.username}
+                  </div>
+                  <div className="text-[10px] text-zinc-400 truncate">
+                    {user?.email}
+                  </div>
                 </div>
-              </div>
+              </NavLink>
+
               <button
                 onClick={handleLogout}
-                className="p-1.5 rounded-lg transition-colors hover:bg-red-500/10"
+                className="p-1.5 rounded hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-colors ml-1"
                 title="Log out"
               >
-                <LogOut size={15} color="#ef4444" />
+                <LogOut size={13} />
               </button>
             </div>
           </div>
         </aside>
       </>
 
-      {/* ── Main content area ───────────────────────────────────────── */}
+      {/* ── Main Content Area ───────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Desktop Header bar */}
+        {/* Desktop Header */}
         <header
-          className="hidden lg:flex items-center justify-between px-8 py-3.5 border-b"
-          style={{ borderColor: 'var(--border)', background: 'rgba(17, 17, 24, 0.7)', backdropFilter: 'blur(8px)' }}
+          className="hidden lg:flex items-center justify-between px-6 py-2.5 border-b"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}
         >
-          <div className="flex items-center gap-4 text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/80 border border-slate-800" title="All funds are calculated in integer paise without floating-point error">
-              <Coins size={13} className="text-amber-400" />
-              <span className="text-slate-300">Precision: <strong className="text-amber-400 font-mono">Paise</strong></span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/80 border border-slate-800" title="Ownership allocation strictly sums to 10,000 basis points (100.00%)">
-              <PieChart size={13} className="text-purple-400" />
-              <span className="text-slate-300">Equity: <strong className="text-purple-400 font-mono">10,000 BPS</strong></span>
-            </div>
-            <span className="text-[11px] text-slate-500">·</span>
-            <span className="text-[11px] text-amber-500/80 font-medium">⚡ Sandbox Mode (Simulated Funds)</span>
+          <div className="flex items-center gap-3 text-xs text-zinc-400">
+            <span className="text-zinc-300 font-medium">Accounting: <span className="font-mono text-zinc-400">Integer Paise</span></span>
+            <span>·</span>
+            <span className="text-zinc-300 font-medium">Equity: <span className="font-mono text-zinc-400">10,000 Basis Points</span></span>
+            <span>·</span>
+            <span className="text-zinc-500 text-[11px]">Simulated sandbox</span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={() => setOnboardingOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/5 border border-slate-800 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
             >
-              <HelpCircle size={14} className="text-indigo-400" />
-              <span>Guide & Tour</span>
+              <HelpCircle size={14} />
+              <span>Guide</span>
             </button>
 
-            <NavLink to="/profile" className="flex items-center gap-2 hover:opacity-90">
-              <div className="avatar avatar-sm text-xs">{initials}</div>
+            <NavLink to="/profile" className="avatar avatar-sm text-[11px]">
+              {initials}
             </NavLink>
           </div>
         </header>
 
-        {/* Mobile top bar */}
+        {/* Mobile Header */}
         <header
-          className="lg:hidden flex items-center justify-between p-4 border-b"
+          className="lg:hidden flex items-center justify-between p-3.5 border-b"
           style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}
         >
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg"
-            style={{ background: 'var(--bg-card)' }}
+            className="p-1.5 rounded text-zinc-300"
           >
-            <Menu size={18} style={{ color: 'var(--text-primary)' }} />
+            <Menu size={18} />
           </button>
-          <div className="font-bold text-sm text-white">GroupBuy</div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setOnboardingOpen(true)}
-              className="p-1.5 rounded-lg text-indigo-400 bg-indigo-500/10 border border-indigo-500/20"
-              title="Tour"
-            >
-              <HelpCircle size={16} />
-            </button>
-            <NavLink to="/profile" className="avatar avatar-sm text-xs">{initials}</NavLink>
-          </div>
+          <div className="font-semibold text-sm text-white">GroupBuy</div>
+          <NavLink to="/profile" className="avatar avatar-sm text-xs">{initials}</NavLink>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-4 lg:p-8">
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
 
-      {/* Onboarding walkthrough modal */}
       <OnboardingModal
         isOpen={onboardingOpen}
         onClose={() => setOnboardingOpen(false)}
