@@ -1,0 +1,23 @@
+{
+  "name": "groupbuy-monorepo",
+  "version": "1.0.0",
+  "description": "GroupBuy — Collaborative Ownership & Resource-Sharing Platform",
+  "private": true,
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build",
+    "test:server": "cd server && npm test",
+    "test": "cd server && npm test",
+    "start:server": "cd server && npm start",
+    "seed": "cd server && npm run seed"
+  },
+  "keywords": [
+    "groupbuy",
+    "co-ownership",
+    "resource-sharing"
+  ],
+  "author": "",
+  "license": "ISC"
+}

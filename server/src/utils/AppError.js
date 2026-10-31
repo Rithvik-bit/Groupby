@@ -1,0 +1,16 @@
+'use strict';
+/**
+ * AppError — structured error with HTTP status code.
+ * Never exposes stack traces in production responses.
+ */
+class AppError extends Error {
+  constructor(message, statusCode = 500, code = 'INTERNAL_ERROR') {
+    super(message);
+    this.statusCode = statusCode;
+    this.code = code;
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+module.exports = AppError;
