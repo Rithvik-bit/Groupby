@@ -44,7 +44,16 @@ function GuestRoute({ children }) {
   const { user, loading } = useAuth()
   const location = useLocation()
 
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Loading GroupBuy...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Redirect to previously intended destination or default dashboard
   if (user) {
