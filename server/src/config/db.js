@@ -68,6 +68,32 @@ async function connectDB() {
 
     return mongoose.connection;
   } catch (err) {
+    if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
+      console.warn(`\n[DB] Configured MongoDB unreachable (${err.message}).`);
+      console.log('[DB] 🚀 Automatically starting embedded in-memory MongoDB for local development...');
+      try {
+        const { MongoMemoryServer } = require('mongodb-memory-server');
+        const mongod = await MongoMemoryServer.create();
+        const memUri = mongod.getUri();
+        await mongoose.connect(memUri);
+        isConnected = true;
+        transactionsSupported = false;
+        console.log(`[DB] ✅ Connected to Development In-Memory MongoDB at ${memUri}`);
+
+        try {
+          const { seedDirect } = require('../scripts/seed');
+          await seedDirect();
+          console.log('[DB] ✅ Seeded in-memory database with demo users, syndicates & assets!\n');
+        } catch (seedErr) {
+          console.warn('[DB] Auto-seed warning:', seedErr.message);
+        }
+
+        return mongoose.connection;
+      } catch (memErr) {
+        console.error('[DB] Failed to initialize in-memory fallback:', memErr.message);
+      }
+    }
+
     isConnected = false;
     transactionsSupported = false;
 

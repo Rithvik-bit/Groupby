@@ -231,3 +231,4 @@ export default function OnboardingModal({ isOpen, onClose }) {
     </div>
   )
 }
+

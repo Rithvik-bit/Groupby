@@ -23,9 +23,11 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/groupbuy';
 
 const SEED_TAG = '[DEMO DATA]'; // All seed records carry this tag
 
-async function seed() {
-  await mongoose.connect(MONGO_URI);
-  console.log('[Seed] Connected to MongoDB');
+async function seed(disconnectAfter = true) {
+  if (mongoose.connection.readyState !== 1) {
+    await mongoose.connect(MONGO_URI);
+    console.log('[Seed] Connected to MongoDB');
+  }
 
   // Wipe existing seed data (tagged records only — never touches real user data via tag)
   // For dev safety, wipe all in dev environment
@@ -272,10 +274,16 @@ async function seed() {
   console.log('  dave@groupbuy.dev  (Member)');
   console.log('\n⚠️  ALL DATA ABOVE IS SAMPLE/DEMO DATA — clearly labeled [DEMO]\n');
 
-  await mongoose.disconnect();
+  if (disconnectAfter) {
+    await mongoose.disconnect();
+  }
 }
 
-seed().catch((err) => {
-  console.error('[Seed] Error:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  seed(true).catch((err) => {
+    console.error('[Seed] Error:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { seed, seedDirect: () => seed(false) };
