@@ -32,7 +32,13 @@ export default function Register() {
       toast.success('Account created! Check your email to verify.')
       navigate('/login')
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Registration failed.')
+      const msg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        (err.message === 'Network Error'
+          ? 'Cannot connect to backend server. Please make sure the backend is running.'
+          : err.message || 'Registration failed.')
+      setError(msg)
     } finally {
       setLoading(false)
     }

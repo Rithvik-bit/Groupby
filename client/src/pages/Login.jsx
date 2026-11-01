@@ -24,7 +24,13 @@ export default function Login() {
       const destination = location.state?.from?.pathname || '/dashboard'
       navigate(destination, { replace: true })
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Login failed. Please try again.')
+      const msg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        (err.message === 'Network Error'
+          ? 'Cannot connect to backend server. Please make sure the backend is running.'
+          : err.message || 'Login failed. Please try again.')
+      setError(msg)
     } finally {
       setLoading(false)
     }
