@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 
 const financialEntrySchema = new mongoose.Schema(
   {
-    venture: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessVenture', required: true },
+    venture: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessVenture', required: false, default: null },
     group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
     recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 

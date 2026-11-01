@@ -20,7 +20,7 @@ const notificationSchema = new mongoose.Schema(
         'ownership_transfer_request', 'ownership_transfer_complete',
         'dispute_opened', 'dispute_updated',
         'chat_message', 'announcement',
-        'venture_expense_approval',
+        'venture_expense_approval', 'expense_approval_needed', 'expense_approved', 'expense_rejected',
         'account_verified',
         'system',
       ],

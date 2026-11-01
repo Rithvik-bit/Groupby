@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import GroupAssets from '../components/GroupAssets'
+import GroupFinancials from '../components/GroupFinancials'
 
 function formatPaise(p) {
   return `₹${((p || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 0 })}`
@@ -386,6 +387,7 @@ export default function GroupDetail() {
     { id: 'overview', label: 'Overview' },
     { id: 'members', label: `Members (${members.length || group.memberCount})` },
     ...(isMember ? [{ id: 'assets', label: 'Assets & Booking' }] : []),
+    ...(isMember ? [{ id: 'financials', label: 'Financials & Ledger' }] : []),
     ...(isLeader ? [{ id: 'requests', label: `Requests (${requests.length})` }] : []),
     ...(isMember ? [{ id: 'chat', label: 'Group Chat' }] : []),
     ...(isLeader ? [{ id: 'settings', label: 'Settings' }] : []),
@@ -764,6 +766,11 @@ export default function GroupDetail() {
         {/* Tab 3: Assets & Booking */}
         {tab === 'assets' && isMember && (
           <GroupAssets groupId={groupId} isLeader={isLeader} isOwner={isOwner} />
+        )}
+
+        {/* Tab 3.5: Financials & Ledger */}
+        {tab === 'financials' && isMember && (
+          <GroupFinancials groupId={groupId} isLeader={isLeader} isOwner={isOwner} />
         )}
 
         {/* Tab 4: Chat */}

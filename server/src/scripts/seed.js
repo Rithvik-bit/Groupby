@@ -18,6 +18,7 @@ const BusinessVenture = require('../models/BusinessVenture');
 const ChatMessage = require('../models/ChatMessage');
 const Contribution = require('../models/Contribution');
 const Notification = require('../models/Notification');
+const FinancialEntry = require('../models/FinancialEntry');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/groupbuy';
 
@@ -41,6 +42,7 @@ async function seed(disconnectAfter = true) {
       BusinessVenture.deleteMany({}),
       ChatMessage.deleteMany({ messageType: 'system' }),
       Contribution.deleteMany({ paymentProvider: 'simulated' }),
+      FinancialEntry.deleteMany({}),
     ]);
     console.log('[Seed] Cleared previous seed data');
   }
@@ -248,6 +250,60 @@ async function seed(disconnectAfter = true) {
     },
   ]);
   console.log('[Seed] Created demo chat messages');
+
+  // ── Financial Entries (Ledger) ──────────────────────────────────────────
+  await FinancialEntry.insertMany([
+    {
+      group: projectorGroup._id,
+      recordedBy: bob._id,
+      entryType: 'expense',
+      amountPaise: 120000, // ₹1,200
+      description: 'High-speed HDMI 2.1 15m optical cables & ceiling mount hardware [DEMO DATA]',
+      category: 'maintenance',
+      documentReference: 'Receipt #INV-8821',
+      requiresApproval: false,
+      approvalStatus: 'approved',
+      approvals: [{ user: bob._id, decision: 'approved', note: 'Essential installation hardware', decidedAt: new Date() }],
+      entryDate: new Date(Date.now() - 5 * 24 * 3600 * 1000),
+    },
+    {
+      group: projectorGroup._id,
+      recordedBy: alice._id,
+      entryType: 'expense',
+      amountPaise: 45000, // ₹450
+      description: 'Microfiber lens cleaning kit & protective carry case [DEMO DATA]',
+      category: 'supplies',
+      documentReference: 'Amazon Order #402-99120',
+      requiresApproval: false,
+      approvalStatus: 'not_required',
+      entryDate: new Date(Date.now() - 3 * 24 * 3600 * 1000),
+    },
+    {
+      group: projectorGroup._id,
+      recordedBy: dave._id,
+      entryType: 'expense',
+      amountPaise: 250000, // ₹2,500 (exceeds ₹1,000 threshold -> requires leader approval)
+      description: 'Authorized service center optical engine laser diagnostic [DEMO DATA]',
+      category: 'repairs',
+      documentReference: 'Epson Service Estimate #EST-109',
+      requiresApproval: true,
+      approvalStatus: 'pending',
+      entryDate: new Date(Date.now() - 1 * 24 * 3600 * 1000),
+    },
+    {
+      group: projectorGroup._id,
+      recordedBy: bob._id,
+      entryType: 'revenue',
+      amountPaise: 350000, // ₹3,500
+      description: 'Inter-college design symposium weekend screening fee [DEMO DATA]',
+      category: 'revenue',
+      documentReference: 'Symposium Booking #SYM-2026',
+      requiresApproval: false,
+      approvalStatus: 'not_required',
+      entryDate: new Date(Date.now() - 2 * 24 * 3600 * 1000),
+    },
+  ]);
+  console.log('[Seed] Created demo financial ledger entries');
 
   // ── Notifications ─────────────────────────────────────────────────────────
   await Notification.insertMany([

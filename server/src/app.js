@@ -32,6 +32,7 @@ const contributionRoutes = require('./routes/contributionRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const userBookingRoutes = require('./routes/userBookingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const financialRoutes = require('./routes/financialRoutes');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -104,6 +105,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/groups/:groupId/chat', chatRoutes);
 app.use('/api/groups/:groupId/contributions', contributionRoutes);
 app.use('/api/groups/:groupId/assets', bookingRoutes);
+app.use('/api/groups/:groupId/financials', financialRoutes);
 app.use('/api/bookings', userBookingRoutes);
 app.use('/api/notifications', notificationRoutes);
 

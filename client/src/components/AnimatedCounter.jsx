@@ -58,3 +58,4 @@ export default function AnimatedCounter({ value, duration = 1200, prefix = '', s
     </span>
   )
 }
+
