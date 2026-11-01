@@ -10,6 +10,7 @@ const Group = require('../models/Group');
 const GroupMembership = require('../models/GroupMembership');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const BusinessVenture = require('../models/BusinessVenture');
 const AppError = require('../utils/AppError');
 const audit = require('../utils/auditLogger');
 
@@ -249,8 +250,14 @@ async function getGroup(req, res, next) {
       (req.user && req.user.role === 'admin') ||
       (viewerMembership && ['owner', 'admin', 'moderator'].includes(viewerMembership.role));
 
-    if (!canSeeInvite) {
+    if (canSeeInvite) {
+      // keep inviteCode
+    } else {
       delete groupData.inviteCode;
+    }
+
+    if (group.groupType === 'business_venture') {
+      groupData.venture = await BusinessVenture.findOne({ group: groupId });
     }
 
     // Attach current viewer role for client-side rendering convenience

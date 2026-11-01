@@ -90,17 +90,20 @@ export default function Dashboard() {
   const { user, accessToken } = useAuth()
   const [myGroups, setMyGroups] = useState([])
   const [invitations, setInvitations] = useState([])
+  const [myBookings, setMyBookings] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [grpRes, invRes] = await Promise.all([
+        const [grpRes, invRes, bookRes] = await Promise.all([
           api.get('/groups/my', { headers: { Authorization: `Bearer ${accessToken}` } }),
           api.get('/groups/my/invitations', { headers: { Authorization: `Bearer ${accessToken}` } }).catch(() => ({ data: { data: [] } })),
+          api.get('/bookings/my', { headers: { Authorization: `Bearer ${accessToken}` } }).catch(() => ({ data: { data: [] } })),
         ])
         setMyGroups(grpRes.data.data || [])
         setInvitations(invRes.data.data || [])
+        setMyBookings(bookRes.data.data || [])
       } catch (err) {
         console.error(err)
       } finally {
@@ -110,15 +113,17 @@ export default function Dashboard() {
     if (accessToken) fetchData()
   }, [accessToken])
 
+  const upcomingBookings = myBookings.filter(b => ['pending', 'approved', 'confirmed', 'active'].includes(b.status))
+
   const stats = [
     { icon: Users, label: 'My Groups', value: myGroups.length },
     {
-      icon: TrendingUp, label: 'Total Contributed',
+      icon: TrendingUp, label: 'Total Co-funded',
       value: formatPaise(myGroups.reduce((s, m) => s + (m.group?.currentAmountPaise || 0), 0)),
-      sub: 'Simulated balance',
+      sub: 'Simulated pool balance',
     },
-    { icon: Briefcase, label: 'Ventures', value: myGroups.filter(m => m.group?.groupType === 'business_venture').length },
-    { icon: Package, label: 'Equipment Groups', value: myGroups.filter(m => m.group?.groupType === 'shared_equipment').length },
+    { icon: Calendar, label: 'Active Bookings', value: upcomingBookings.length, sub: 'Upcoming reservations' },
+    { icon: Briefcase, label: 'Ventures & Pools', value: myGroups.filter(m => ['business_venture', 'shared_equipment'].includes(m.group?.groupType)).length },
   ]
 
   return (
@@ -205,6 +210,41 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Upcoming Equipment Bookings */}
+      {upcomingBookings.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+              <Calendar size={15} className="text-emerald-400" />
+              <span>Upcoming Equipment Reservations ({upcomingBookings.length})</span>
+            </h2>
+            <Link to="/bookings" className="text-xs text-indigo-400 hover:text-indigo-300">
+              Manage all bookings →
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {upcomingBookings.slice(0, 4).map(b => (
+              <div key={b._id} className="glass-card p-3.5 flex flex-col justify-between">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-xs font-semibold text-white">{b.asset?.name || 'Shared Asset'}</h3>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">{b.group?.title?.replace('[DEMO] ', '') || 'Group Asset'}</p>
+                  </div>
+                  <span className={`badge badge-${b.status === 'confirmed' || b.status === 'approved' ? 'success' : 'warning'} text-[10px]`}>
+                    {b.status}
+                  </span>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
+                  <span>{new Date(b.startTime).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>→</span>
+                  <span>{new Date(b.endTime).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Action shortcuts */}
       <div>

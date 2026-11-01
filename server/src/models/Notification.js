@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema(
         'booking_request', 'booking_approved', 'booking_confirmed', 'booking_rejected',
         'booking_cancelled', 'booking_reminder', 'booking_overdue', 'asset_updated',
         'contribution_received', 'funding_complete', 'purchase_confirmed',
-        'ownership_transfer_request', 'ownership_transfer_complete',
+        'ownership_transfer_request', 'ownership_transfer_accepted', 'ownership_transfer_rejected', 'ownership_transfer_cancelled', 'ownership_transfer_complete',
         'dispute_opened', 'dispute_updated',
         'chat_message', 'announcement',
         'venture_expense_approval', 'expense_approval_needed', 'expense_approved', 'expense_rejected',

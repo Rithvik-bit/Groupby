@@ -7,11 +7,12 @@ import {
   Users, MessageSquare, TrendingUp, ArrowLeft,
   Send, AlertCircle, MapPin, Calendar, DollarSign,
   Package, Shield, Clock, CheckCircle, UserPlus,
-  UserMinus, LogOut, Check, X, Coins
+  UserMinus, LogOut, Check, X, Coins, Briefcase
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import GroupAssets from '../components/GroupAssets'
 import GroupFinancials from '../components/GroupFinancials'
+import OwnershipTransfers from '../components/OwnershipTransfers'
 
 function formatPaise(p) {
   return `₹${((p || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 0 })}`
@@ -388,6 +389,7 @@ export default function GroupDetail() {
     { id: 'members', label: `Members (${members.length || group.memberCount})` },
     ...(isMember ? [{ id: 'assets', label: 'Assets & Booking' }] : []),
     ...(isMember ? [{ id: 'financials', label: 'Financials & Ledger' }] : []),
+    ...(isMember ? [{ id: 'transfers', label: 'Ownership & Transfers' }] : []),
     ...(isLeader ? [{ id: 'requests', label: `Requests (${requests.length})` }] : []),
     ...(isMember ? [{ id: 'chat', label: 'Group Chat' }] : []),
     ...(isLeader ? [{ id: 'settings', label: 'Settings' }] : []),
@@ -529,6 +531,58 @@ export default function GroupDetail() {
                 </div>
               ))}
             </div>
+
+            {/* Venture Specific Overview */}
+            {group.groupType === 'business_venture' && group.venture && (
+              <div className="p-5 rounded-xl border space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-amber-400" />
+                    <h3 className="font-semibold text-white text-base">Venture Operations &amp; Surplus</h3>
+                  </div>
+                  <span className="badge badge-warning text-xs capitalize">{group.venture.status || 'Active'}</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3 rounded-lg bg-black/40 border border-neutral-800">
+                    <span className="text-[11px] text-zinc-400">Total Venture Revenue</span>
+                    <div className="text-lg font-bold font-mono text-emerald-400 mt-0.5">
+                      {formatPaise(group.venture.totalRevenuePaise || 0)}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-black/40 border border-neutral-800">
+                    <span className="text-[11px] text-zinc-400">Total Operating Expenses</span>
+                    <div className="text-lg font-bold font-mono text-rose-400 mt-0.5">
+                      {formatPaise(group.venture.totalExpensePaise || 0)}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-black/40 border border-neutral-800">
+                    <span className="text-[11px] text-zinc-400">Net Surplus for Allocation</span>
+                    <div className="text-lg font-bold font-mono text-indigo-400 mt-0.5">
+                      {formatPaise((group.venture.totalRevenuePaise || 0) - (group.venture.totalExpensePaise || 0))}
+                    </div>
+                  </div>
+                </div>
+
+                {group.venture.surplusAllocationRules && (
+                  <div className="text-xs p-3 rounded-lg bg-neutral-900/50 border border-neutral-800 space-y-1">
+                    <strong className="text-amber-300 font-semibold">Surplus Allocation Rules:</strong>
+                    <p className="text-neutral-300">{group.venture.surplusAllocationRules}</p>
+                  </div>
+                )}
+
+                {group.venture.exitRules && (
+                  <div className="text-xs p-3 rounded-lg bg-neutral-900/50 border border-neutral-800 space-y-1">
+                    <strong className="text-indigo-300 font-semibold">Exit &amp; Transfer Guidelines:</strong>
+                    <p className="text-neutral-300">{group.venture.exitRules}</p>
+                  </div>
+                )}
+
+                <p className="text-[11px] text-zinc-500 italic">
+                  ⚠️ {group.venture.legalDisclaimer || 'This venture is a collaborative record-keeping tool. It does not constitute a legally registered business or investment vehicle.'}
+                </p>
+              </div>
+            )}
 
             {group.rules && (
               <div className="p-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
@@ -771,6 +825,11 @@ export default function GroupDetail() {
         {/* Tab 3.5: Financials & Ledger */}
         {tab === 'financials' && isMember && (
           <GroupFinancials groupId={groupId} isLeader={isLeader} isOwner={isOwner} />
+        )}
+
+        {/* Tab 3.7: Ownership & Transfers */}
+        {tab === 'transfers' && isMember && (
+          <OwnershipTransfers groupId={groupId} isLeader={isLeader} members={members} />
         )}
 
         {/* Tab 4: Chat */}

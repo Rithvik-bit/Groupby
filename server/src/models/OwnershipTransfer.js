@@ -9,7 +9,8 @@ const mongoose = require('mongoose');
 const ownershipTransferSchema = new mongoose.Schema(
   {
     group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
-    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: false },
+    asset: { type: mongoose.Schema.Types.ObjectId, ref: 'SharedAsset', required: false },
     fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     toUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 

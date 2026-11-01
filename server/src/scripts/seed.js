@@ -19,6 +19,8 @@ const ChatMessage = require('../models/ChatMessage');
 const Contribution = require('../models/Contribution');
 const Notification = require('../models/Notification');
 const FinancialEntry = require('../models/FinancialEntry');
+const OwnershipRecord = require('../models/OwnershipRecord');
+const OwnershipTransfer = require('../models/OwnershipTransfer');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/groupbuy';
 
@@ -43,6 +45,8 @@ async function seed(disconnectAfter = true) {
       ChatMessage.deleteMany({ messageType: 'system' }),
       Contribution.deleteMany({ paymentProvider: 'simulated' }),
       FinancialEntry.deleteMany({}),
+      OwnershipRecord.deleteMany({}),
+      OwnershipTransfer.deleteMany({}),
     ]);
     console.log('[Seed] Cleared previous seed data');
   }
@@ -149,7 +153,32 @@ async function seed(disconnectAfter = true) {
 
   // Update group funding
   await Group.findByIdAndUpdate(cameraGroup._id, { currentAmountPaise: 18000000 });
-  console.log('[Seed] Created camera collective group');
+
+  // Initialized Ownership Records for cameraGroup
+  const aliceOwnership = await OwnershipRecord.create({
+    group: cameraGroup._id, user: alice._id, product: cameraProduct._id,
+    ownershipBasisPoints: 5556, // 55.56%
+    contributionAmountPaise: 10000000,
+    status: 'finalized', finalizedAt: new Date(),
+  });
+  await OwnershipRecord.create({
+    group: cameraGroup._id, user: bob._id, product: cameraProduct._id,
+    ownershipBasisPoints: 4444, // 44.44%
+    contributionAmountPaise: 8000000,
+    status: 'finalized', finalizedAt: new Date(),
+  });
+
+  // Demo active transfer proposal: Alice offered to sell 1,000 bps (10.00%) to Bob
+  await OwnershipTransfer.create({
+    group: cameraGroup._id, product: cameraProduct._id,
+    fromUser: alice._id, toUser: bob._id,
+    basisPointsToTransfer: 1000, proposedPricePaise: 2500000, // ₹25,000
+    status: 'awaiting_buyer',
+    sourceOwnershipRecord: aliceOwnership._id,
+    auditNote: 'Willing to transfer 10% share to Bob as agreed during shoot planning.',
+  });
+
+  console.log('[Seed] Created camera collective group & ownership ledger');
 
   // ── Group 2: Mode B — Shared Equipment (Projector) ──────────────────────
   const projectorGroup = await Group.create({
