@@ -19,7 +19,13 @@ export function SocketProvider({ children }) {
       return
     }
 
-    const socket = io('/', {
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL ||
+      import.meta.env.VITE_WS_URL ||
+      (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') : '') ||
+      '/'
+
+    const socket = io(socketUrl, {
       auth: { token: accessToken },
       transports: ['websocket', 'polling'],
       reconnection: true,
