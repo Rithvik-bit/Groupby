@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Logo from '../components/Logo'
 
 export default function Login() {
   const { login } = useAuth()
@@ -43,10 +44,8 @@ export default function Login() {
           style={{ background: 'radial-gradient(circle, #8b5cf6, transparent)', transform: 'translate(30%, 30%)' }} />
 
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-lg"
-              style={{ background: 'var(--gradient-primary)' }}>GB</div>
-            <span className="text-white font-bold text-lg">GroupBuy</span>
+          <div className="mb-16">
+            <Logo variant="full" size="md" to="/" />
           </div>
           <h1 className="text-4xl font-black leading-tight text-white mb-4">
             Share Resources.<br />
@@ -78,17 +77,12 @@ export default function Login() {
       {/* Right: login form */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md animate-fade-in">
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black"
-              style={{ background: 'var(--gradient-primary)' }}>GB</div>
-            <span className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>GroupBuy</span>
-          </div>
-
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Welcome back</h2>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Sign in to your GroupBuy account
+          {/* Brand Logo & Header */}
+          <div className="mb-8 text-center flex flex-col items-center">
+            <Logo variant="full" size="md" to="/" className="mb-4" />
+            <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Welcome to GroupBuy</h2>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              Buy Together. Own Together.
             </p>
           </div>
 

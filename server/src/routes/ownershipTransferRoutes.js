@@ -26,3 +26,4 @@ router.patch('/:transferId/reject', transferCtrl.rejectTransfer);
 router.patch('/:transferId/cancel', transferCtrl.cancelTransfer);
 
 module.exports = router;
+

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import Logo from '../components/Logo'
 
 export default function VerifyEmail() {
   const { token } = useParams()
@@ -37,7 +38,10 @@ export default function VerifyEmail() {
   }, [token, verifyEmail])
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg-primary)' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 flex-col" style={{ background: 'var(--bg-primary)' }}>
+      <div className="mb-6">
+        <Logo variant="full" size="md" to="/" />
+      </div>
       <div className="w-full max-w-md animate-fade-in card p-8 text-center">
         {status === 'loading' && (
           <div className="py-8">

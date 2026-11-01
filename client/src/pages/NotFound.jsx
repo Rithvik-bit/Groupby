@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
+import Logo from '../components/Logo'
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center text-center p-6"
       style={{ background: 'var(--bg-primary)' }}>
-      <div className="animate-fade-in">
+      <div className="animate-fade-in flex flex-col items-center">
+        <Logo variant="full" size="md" to="/" className="mb-6" />
         <div className="text-8xl font-black mb-4"
           style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           404

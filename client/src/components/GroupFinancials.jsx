@@ -606,3 +606,4 @@ export default function GroupFinancials({ groupId, isLeader, isOwner }) {
     </div>
   )
 }
+

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Eye, EyeOff, UserPlus, AlertCircle, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Logo from '../components/Logo'
 
 export default function Register() {
   const { register } = useAuth()
@@ -40,17 +41,12 @@ export default function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg-primary)' }}>
       <div className="w-full max-w-md animate-fade-in">
-        {/* Logo */}
-        <div className="flex items-center gap-2 mb-8 justify-center">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black"
-            style={{ background: 'var(--gradient-primary)' }}>GB</div>
-          <span className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>GroupBuy</span>
-        </div>
-
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Create your account</h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Join thousands building together
+        {/* Brand Logo & Header */}
+        <div className="mb-8 text-center flex flex-col items-center">
+          <Logo variant="full" size="md" to="/" className="mb-4" />
+          <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Welcome to GroupBuy</h1>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            Buy Together. Own Together.
           </p>
         </div>
 

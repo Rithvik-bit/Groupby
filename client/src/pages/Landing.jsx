@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import GhostFibers from '../components/GhostFibers'
 import SpotlightCard from '../components/SpotlightCard'
 import AnimatedCounter from '../components/AnimatedCounter'
+import Logo from '../components/Logo'
 import {
   Users, Calendar, ArrowRight, Check,
   ChevronDown, ChevronUp, Clock, ShieldCheck,
@@ -110,15 +111,7 @@ export default function Landing() {
       {/* ── Navigation (Sticky with backdrop-blur) ───────────────────────── */}
       <header className="sticky top-0 z-40 border-b backdrop-blur-md bg-zinc-950/80 transition-all" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 font-semibold text-sm text-white group">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-              GB
-            </div>
-            <span className="tracking-tight">GroupBuy</span>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              Co-Ownership
-            </span>
-          </Link>
+          <Logo variant="full" size="sm" to="/" />
 
           <nav className="hidden sm:flex items-center gap-6 text-xs text-zinc-400">
             <a href="#live-preview" className="hover:text-white transition-colors">Live Bento</a>
@@ -173,12 +166,14 @@ export default function Landing() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight">
-            Split the cost of expensive equipment. <br className="hidden sm:inline" />
-            <span className="text-zinc-400 font-normal">Share the calendar without disputes.</span>
+            Buy Together. Own Together. <br className="hidden sm:inline" />
+            <span style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Grow Together.
+            </span>
           </h1>
 
-          <p className="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto mt-4 mb-8 leading-relaxed">
-            Pool funds for camera rigs, 3D printers, or workshop machines. Every member gets an audited equity record in basis points and books reservations on a conflict-free schedule.
+          <p className="text-sm sm:text-base text-zinc-300 max-w-2xl mx-auto mt-4 mb-8 leading-relaxed">
+            Collectively acquire expensive assets, share audited fractional ownership in basis points, coordinate usage on conflict-free booking calendars, communicate privately, and manage equity transfers seamlessly.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pointer-events-auto">
@@ -518,16 +513,35 @@ export default function Landing() {
       </section>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="py-8 border-t text-xs text-zinc-500" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-zinc-300">GroupBuy</span>
-            <span>·</span>
-            <span>Integer Paise & Basis Points Architecture</span>
+      <footer className="py-12 border-t text-xs text-zinc-400" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-zinc-800/80">
+            <div>
+              <Logo variant="full" size="md" to="/" className="mb-2" />
+              <p className="text-xs text-zinc-400 max-w-sm mt-2">
+                A collaborative ownership platform to collectively acquire expensive assets, manage shared equipment, coordinate usage, and track joint ventures.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-8 text-xs">
+              <div className="space-y-2">
+                <div className="font-semibold text-zinc-200">Platform</div>
+                <div><a href="#live-preview" className="hover:text-white transition-colors">Live Bento</a></div>
+                <div><a href="#how-it-works" className="hover:text-white transition-colors">Workflow</a></div>
+                <div><a href="#faq" className="hover:text-white transition-colors">FAQ</a></div>
+              </div>
+              <div className="space-y-2">
+                <div className="font-semibold text-zinc-200">Legal &amp; Trust</div>
+                <div><a href="#about" className="hover:text-white transition-colors">About</a></div>
+                <div><a href="#privacy" className="hover:text-white transition-colors">Privacy</a></div>
+                <div><a href="#terms" className="hover:text-white transition-colors">Terms</a></div>
+                <div><a href="#security" className="hover:text-white transition-colors">Security</a></div>
+                <div><a href="#help" className="hover:text-white transition-colors">Help</a></div>
+              </div>
+            </div>
           </div>
-
-          <div>
-            Transactions in demo mode are simulated. No real money is collected.
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-zinc-500">
+            <div>© {new Date().getFullYear()} GroupBuy. Buy Together. Own Together. Grow Together.</div>
+            <div>All financial operations in demo sandbox are simulated with integer paise.</div>
           </div>
         </div>
       </footer>

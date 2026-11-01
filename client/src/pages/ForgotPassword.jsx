@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Mail, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react'
+import Logo from '../components/Logo'
 
 export default function ForgotPassword() {
   const { forgotPassword } = useAuth()
@@ -25,7 +26,10 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg-primary)' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 flex-col" style={{ background: 'var(--bg-primary)' }}>
+      <div className="mb-6">
+        <Logo variant="full" size="md" to="/" />
+      </div>
       <div className="w-full max-w-md animate-fade-in card p-8">
         <Link to="/login" className="inline-flex items-center gap-2 text-sm mb-6 text-indigo-400 hover:underline">
           <ArrowLeft size={16} /> Back to Login

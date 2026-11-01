@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { KeyRound, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Logo from '../components/Logo'
 
 export default function ResetPassword() {
   const { token } = useParams()
@@ -47,7 +48,10 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg-primary)' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 flex-col" style={{ background: 'var(--bg-primary)' }}>
+      <div className="mb-6">
+        <Logo variant="full" size="md" to="/" />
+      </div>
       <div className="w-full max-w-md animate-fade-in card p-8">
         <div className="text-center mb-6">
           <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"

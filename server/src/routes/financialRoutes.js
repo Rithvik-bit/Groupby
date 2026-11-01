@@ -23,3 +23,4 @@ router.patch('/:entryId/approve', authenticate, requireMembership(), financialCt
 router.delete('/:entryId', authenticate, requireMembership(), financialCtrl.deleteFinancialEntry);
 
 module.exports = router;
+

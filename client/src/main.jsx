@@ -7,6 +7,19 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { SocketProvider } from './context/SocketContext.jsx'
 import './index.css'
 
+// Catch any uncaught errors that happen before React mounts
+window.onerror = function (msg, src, line, col, err) {
+  document.body.innerHTML = `<div style="padding:32px;color:#ff6b6b;background:#121212;font-family:monospace;min-height:100vh">
+    <h2 style="font-size:20px;font-weight:bold;margin-bottom:12px">⚠️ Uncaught Error (before React mounted)</h2>
+    <pre style="white-space:pre-wrap;background:#1e1e1e;padding:16px;border-radius:8px;color:#fca5a5">${msg}\n${err?.stack || ''}</pre>
+    <button onclick="location.reload()" style="margin-top:16px;padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer">Reload</button>
+  </div>`
+  return false
+}
+window.onunhandledrejection = function (e) {
+  console.error('[UnhandledRejection]', e.reason)
+}
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)

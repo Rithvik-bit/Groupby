@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 import OnboardingModal from './OnboardingModal'
+import Logo from './Logo'
 import {
   LayoutDashboard, Users, Plus, LogOut,
   Bell, Menu, X, Wifi, WifiOff, HelpCircle,
@@ -66,12 +67,7 @@ export default function Layout() {
         >
           {/* Logo */}
           <div className="p-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--border)' }}>
-            <NavLink to="/dashboard" className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
-                GB
-              </div>
-              <div className="font-semibold text-sm text-white">GroupBuy</div>
-            </NavLink>
+            <Logo variant="full" size="sm" to="/dashboard" />
             <button
               className="lg:hidden p-1 rounded text-zinc-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
@@ -198,7 +194,7 @@ export default function Layout() {
           >
             <Menu size={18} />
           </button>
-          <div className="font-semibold text-sm text-white">GroupBuy</div>
+          <Logo variant="full" size="xs" to="/dashboard" />
           <NavLink to="/profile" className="avatar avatar-sm text-xs">{initials}</NavLink>
         </header>
 
