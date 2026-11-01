@@ -21,7 +21,17 @@ const { validateEnvironment } = require('./utils/validateEnv');
 const { csrfProtection } = require('./middleware/csrf');
 
 // Validate security and environment settings
-validateEnvironment();
+let configErrorMessage = null;
+try {
+  validateEnvironment();
+} catch (err) {
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    console.warn('[CONFIG WARNING - Vercel Serverless]', err.message);
+    configErrorMessage = err.message;
+  } else {
+    throw err;
+  }
+}
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
@@ -82,7 +92,17 @@ app.use(rateLimit({
 // ── Trust proxy (for accurate IPs behind load balancer) ──────────────────────
 app.set('trust proxy', 1);
 
-// ── Health check ──────────────────────────────────────────────────────────────
+// ── Root endpoint & Health check ──────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'GroupBuy API',
+    status: 'online',
+    health: '/health',
+    version: '1.0.0',
+    documentation: 'https://github.com/Rithvik-bit/Groupby',
+  });
+});
+
 app.get('/health', (_req, res) => {
   res.json({
     success: true,
@@ -96,6 +116,29 @@ app.get('/health', (_req, res) => {
     },
     version: '1.0.0',
   });
+});
+
+// ── Serverless environment configuration warning middleware ───────────────────
+app.use((req, res, next) => {
+  if (configErrorMessage && req.path !== '/' && req.path !== '/health') {
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'CONFIGURATION_ERROR',
+        message: 'Required production environment variables are missing on Vercel.',
+        details: configErrorMessage.split('\n').filter(Boolean),
+        required: [
+          'MONGO_URI',
+          'JWT_ACCESS_SECRET',
+          'JWT_REFRESH_SECRET',
+          'COOKIE_SECRET',
+          'CLIENT_URL',
+        ],
+        action: 'Add these variables in your Vercel Project Dashboard under Settings -> Environment Variables, then redeploy.',
+      },
+    });
+  }
+  next();
 });
 
 // ── API routes ────────────────────────────────────────────────────────────────
@@ -133,4 +176,6 @@ if (require.main === module) {
   start();
 }
 
-module.exports = { app, httpServer };
+module.exports = app;
+module.exports.app = app;
+module.exports.httpServer = httpServer;

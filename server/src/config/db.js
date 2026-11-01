@@ -113,6 +113,10 @@ async function connectDB() {
     if (process.env.NODE_ENV === 'test') {
       throw err;
     }
+    if (process.env.VERCEL) {
+      console.error('[DB Vercel Error] MongoDB connection failed:', err.message);
+      return null;
+    }
     process.exit(1);
   }
 }
